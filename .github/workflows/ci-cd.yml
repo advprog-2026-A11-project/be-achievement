@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, staging, ci-cd ]
+  pull_request:
+
+jobs:
+  lint:
+    name: Linting Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Super-linter
+        uses: super-linter/super-linter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JAVA: true
+          LINTER_RULES_PATH: .github/checks
+          JAVA_FILE_NAME: 'google-check.xml'
+
+  test:
+    name: Unit Testing
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Run Tests
+        run: ./gradlew test
+
+  deploy:
+    name: Dummy Deployment
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Deploy
+        run: echo "Semua pengecekan lulus. Modul Achievement siap!"
