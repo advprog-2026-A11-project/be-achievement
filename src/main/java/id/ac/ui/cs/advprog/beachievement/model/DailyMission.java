@@ -12,6 +12,6 @@ public class DailyMission {
   @Id
   private String id;
   private String title;
-  private int requirement; //ex: "read text: 3"
+  private int requirement; // ex: "read text: 3"
   private boolean isActive;
 }
