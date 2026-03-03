@@ -28,8 +28,8 @@ class AchievementServiceImplTests {
   @BeforeEach
   void setUp() {
     achievement = new Achievement();
-    achievement.setId("1");
-    achievement.setName("Test Achievement");
+    achievement.setId(1L);
+    achievement.setTitle("Test Achievement");
   }
 
   @Test
@@ -39,6 +39,6 @@ class AchievementServiceImplTests {
     List<Achievement> result = achievementService.findAll();
 
     assertEquals(1, result.size());
-    assertEquals("Test Achievement", result.get(0).getName());
+    assertEquals("Test Achievement", result.get(0).getTitle());
   }
 }
