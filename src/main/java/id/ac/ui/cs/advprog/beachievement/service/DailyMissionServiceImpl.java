@@ -2,9 +2,9 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class DailyMissionServiceImpl implements DailyMissionService {
@@ -12,29 +12,25 @@ public class DailyMissionServiceImpl implements DailyMissionService {
   private DailyMissionRepository dailyMissionRepository;
 
   @Override
-  public List<DailyMission> findAll() {
-    return dailyMissionRepository.findAll();
-  }
-
-  @Override
   public DailyMission create(DailyMission mission) {
     return dailyMissionRepository.save(mission);
   }
 
   @Override
-  public DailyMission update(String id, DailyMission mission) {
-    DailyMission existing = dailyMissionRepository.findById(id).orElse(null);
-    if (existing != null) {
-      existing.setTitle(mission.getTitle());
-      existing.setRequirement(mission.getRequirement());
-      existing.setActive(mission.isActive());
-      return dailyMissionRepository.save(existing);
-    }
-    return null;
+  public List<DailyMission> findAll() {
+    return dailyMissionRepository.findAll();
   }
 
   @Override
-  public void delete(String id) {
+  public DailyMission update(Long id, DailyMission updatedData) {
+    return dailyMissionRepository.findById(id).map(mission -> {
+      mission.setTitle(updatedData.getTitle());
+      return dailyMissionRepository.save(mission);
+    }).orElse(null);
+  }
+
+  @Override
+  public void delete(Long id) {
     dailyMissionRepository.deleteById(id);
   }
 }
