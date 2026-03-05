@@ -33,9 +33,8 @@ class DailyMissionServiceImplTests {
   @BeforeEach
   void setUp() {
     mission = new DailyMission();
-    mission.setId(1L); // Gunakan Long (1L), bukan "m1"
+    mission.setId(1L);
     mission.setTitle("Membaca Berita");
-    // mission.setRequirement(3); // Pastikan field ini ada di model DailyMission.java kamu
   }
 
   @Test
@@ -56,7 +55,6 @@ class DailyMissionServiceImplTests {
 
   @Test
   void testUpdateMission() {
-    // Mocking behaviour
     when(dailyMissionRepository.findById(1L)).thenReturn(Optional.of(mission));
     when(dailyMissionRepository.save(any(DailyMission.class))).thenReturn(mission);
 

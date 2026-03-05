@@ -13,5 +13,5 @@ public class Achievement {
   private Long id;
   private String title;
   private String description;
-  private Integer requiredPoints;
+  private Integer milestone;
 }

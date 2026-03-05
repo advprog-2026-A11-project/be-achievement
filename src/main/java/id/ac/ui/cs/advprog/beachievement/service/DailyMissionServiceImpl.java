@@ -25,6 +25,12 @@ public class DailyMissionServiceImpl implements DailyMissionService {
   public DailyMission update(Long id, DailyMission updatedData) {
     return dailyMissionRepository.findById(id).map(mission -> {
       mission.setTitle(updatedData.getTitle());
+      mission.setDescription(updatedData.getDescription());
+
+      mission.setTargetMilestone(updatedData.getTargetMilestone());
+      mission.setRewardPoints(updatedData.getRewardPoints());
+      mission.setActiveDate(updatedData.getActiveDate());
+
       return dailyMissionRepository.save(mission);
     }).orElse(null);
   }
