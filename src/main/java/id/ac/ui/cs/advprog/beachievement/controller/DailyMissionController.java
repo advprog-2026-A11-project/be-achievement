@@ -1,22 +1,32 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
+import id.ac.ui.cs.advprog.beachievement.model.DailyMissionRequest;
 import id.ac.ui.cs.advprog.beachievement.service.DailyMissionService;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/daily-missions") // Tambahkan /admin
+@RequestMapping("/api/admin/daily-missions")
 public class DailyMissionController {
 
-  @Autowired
-  private DailyMissionService dailyMissionService;
+  private final DailyMissionService dailyMissionService;
 
+  public DailyMissionController(DailyMissionService dailyMissionService) {
+    this.dailyMissionService = dailyMissionService;
+  }
+
+  // TAMBAHKAN INI - Inilah yang dicari oleh Tes kamu!
   @PostMapping
-  public ResponseEntity<DailyMission> create(@RequestBody DailyMission mission) {
+  public ResponseEntity<DailyMission> create(@RequestBody DailyMissionRequest request) {
+    DailyMission mission = new DailyMission();
+    mission.setTitle(request.getTitle());
+    mission.setDescription(request.getDescription());
+    mission.setTargetMilestone(request.getTargetMilestone());
+    mission.setRewardPoints(request.getRewardPoints());
+
     return new ResponseEntity<>(dailyMissionService.create(mission), HttpStatus.CREATED);
   }
 
@@ -27,7 +37,13 @@ public class DailyMissionController {
 
   @PutMapping("/{id}")
   public ResponseEntity<DailyMission> update(
-      @PathVariable Long id, @RequestBody DailyMission mission) {
+      @PathVariable Long id, @RequestBody DailyMissionRequest request) {
+    DailyMission mission = new DailyMission();
+    mission.setTitle(request.getTitle());
+    mission.setDescription(request.getDescription());
+    mission.setTargetMilestone(request.getTargetMilestone());
+    mission.setRewardPoints(request.getRewardPoints());
+
     return ResponseEntity.ok(dailyMissionService.update(id, mission));
   }
 

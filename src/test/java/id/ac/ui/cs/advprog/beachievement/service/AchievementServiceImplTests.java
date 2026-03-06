@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.beachievement.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.beachievement.model.Achievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
@@ -40,5 +41,22 @@ class AchievementServiceImplTests {
 
     assertEquals(1, result.size());
     assertEquals("Test Achievement", result.get(0).getTitle());
+  }
+
+  @Test
+  void testCreateAchievement() {
+    when(achievementRepository.save(any(Achievement.class))).thenReturn(achievement);
+
+    Achievement created = achievementService.create(achievement);
+
+    assertNotNull(created);
+    assertEquals("Test Achievement", created.getTitle());
+    verify(achievementRepository, times(1)).save(any(Achievement.class));
+  }
+
+  @Test
+  void testDeleteAchievement() {
+    achievementService.delete(1L);
+    verify(achievementRepository, times(1)).deleteById(1L);
   }
 }

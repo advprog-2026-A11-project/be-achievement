@@ -8,8 +8,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DailyMissionServiceImpl implements DailyMissionService {
-  @Autowired
-  private DailyMissionRepository dailyMissionRepository;
+  private final DailyMissionRepository dailyMissionRepository;
+
+  public DailyMissionServiceImpl(DailyMissionRepository dailyMissionRepository) {
+    this.dailyMissionRepository = dailyMissionRepository;
+  }
 
   @Override
   public DailyMission create(DailyMission mission) {
