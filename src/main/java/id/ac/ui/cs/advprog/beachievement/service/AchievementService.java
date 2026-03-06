@@ -5,7 +5,10 @@ import java.util.List;
 
 public interface AchievementService {
   List<Achievement> findAll();
+
   Achievement create(Achievement achievement);
+
   Achievement findById(Long id);
+
   void delete(Long id);
 }

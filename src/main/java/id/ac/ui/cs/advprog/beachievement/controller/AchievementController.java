@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/achievements") // Tambahkan /admin dan hapus method action
+@RequestMapping("/api/admin/achievements")
 public class AchievementController {
 
   private final AchievementService achievementService;
@@ -17,19 +17,16 @@ public class AchievementController {
     this.achievementService = service;
   }
 
-  // URL menjadi: POST /api/admin/achievements
   @PostMapping
   public ResponseEntity<Achievement> createAchievement(@RequestBody Achievement achievement) {
     return new ResponseEntity<>(achievementService.create(achievement), HttpStatus.CREATED);
   }
 
-  // URL menjadi: GET /api/admin/achievements
   @GetMapping
   public ResponseEntity<List<Achievement>> getAllAchievements() {
     return ResponseEntity.ok(achievementService.findAll());
   }
 
-  // URL menjadi: DELETE /api/admin/achievements/{id}
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteAchievement(@PathVariable Long id) {
     achievementService.delete(id);

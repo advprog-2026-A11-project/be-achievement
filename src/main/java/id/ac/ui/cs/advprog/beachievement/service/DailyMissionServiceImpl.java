@@ -2,9 +2,9 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class DailyMissionServiceImpl implements DailyMissionService {
@@ -26,11 +26,9 @@ public class DailyMissionServiceImpl implements DailyMissionService {
     return dailyMissionRepository.findById(id).map(mission -> {
       mission.setTitle(updatedData.getTitle());
       mission.setDescription(updatedData.getDescription());
-
       mission.setTargetMilestone(updatedData.getTargetMilestone());
       mission.setRewardPoints(updatedData.getRewardPoints());
       mission.setActiveDate(updatedData.getActiveDate());
-
       return dailyMissionRepository.save(mission);
     }).orElse(null);
   }

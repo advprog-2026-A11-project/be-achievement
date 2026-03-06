@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Table(name = "achievements")
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class Achievement {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
