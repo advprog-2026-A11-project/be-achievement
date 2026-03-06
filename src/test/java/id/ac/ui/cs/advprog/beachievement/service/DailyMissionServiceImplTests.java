@@ -33,10 +33,8 @@ class DailyMissionServiceImplTests {
   @BeforeEach
   void setUp() {
     mission = new DailyMission();
-    mission.setId("m1");
+    mission.setId(1L);
     mission.setTitle("Membaca Berita");
-    mission.setRequirement(3);
-    mission.setActive(true);
   }
 
   @Test
@@ -52,25 +50,27 @@ class DailyMissionServiceImplTests {
     when(dailyMissionRepository.save(any(DailyMission.class))).thenReturn(mission);
     DailyMission created = dailyMissionService.create(mission);
     assertNotNull(created);
-    assertEquals("m1", created.getId());
+    assertEquals(1L, created.getId());
   }
 
   @Test
   void testUpdateMission() {
-    when(dailyMissionRepository.findById("m1")).thenReturn(Optional.of(mission));
+    when(dailyMissionRepository.findById(1L)).thenReturn(Optional.of(mission));
     when(dailyMissionRepository.save(any(DailyMission.class))).thenReturn(mission);
 
     DailyMission updatedData = new DailyMission();
     updatedData.setTitle("Misi Baru");
 
-    DailyMission result = dailyMissionService.update("m1", updatedData);
+    DailyMission result = dailyMissionService.update(1L, updatedData);
+
     assertNotNull(result);
+    assertEquals("Misi Baru", result.getTitle());
     verify(dailyMissionRepository).save(any(DailyMission.class));
   }
 
   @Test
   void testDeleteMission() {
-    dailyMissionService.delete("m1");
-    verify(dailyMissionRepository, times(1)).deleteById("m1");
+    dailyMissionService.delete(1L);
+    verify(dailyMissionRepository, times(1)).deleteById(1L);
   }
 }

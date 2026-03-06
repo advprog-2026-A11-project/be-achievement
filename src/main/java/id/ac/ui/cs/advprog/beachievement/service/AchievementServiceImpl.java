@@ -22,7 +22,12 @@ public class AchievementServiceImpl implements AchievementService {
   }
 
   @Override
-  public Achievement findById(String id) {
+  public Achievement findById(Long id) {
     return achievementRepository.findById(id).orElse(null);
+  }
+
+  @Override
+  public void delete(Long id) {
+    achievementRepository.deleteById(id);
   }
 }

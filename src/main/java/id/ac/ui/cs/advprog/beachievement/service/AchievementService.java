@@ -8,5 +8,7 @@ public interface AchievementService {
 
   Achievement create(Achievement achievement);
 
-  Achievement findById(String id);
+  Achievement findById(Long id);
+
+  void delete(Long id);
 }
