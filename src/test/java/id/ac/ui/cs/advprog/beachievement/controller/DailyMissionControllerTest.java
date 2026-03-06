@@ -43,7 +43,7 @@ class DailyMissionControllerTest {
 
     when(dailyMissionService.create(any(DailyMission.class))).thenReturn(saved);
 
-    mockMvc.perform(post("/api/admin/daily-missions") // Path sudah sinkron
+    mockMvc.perform(post("/api/admin/daily-missions")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
@@ -54,8 +54,21 @@ class DailyMissionControllerTest {
   void testDeleteMission() throws Exception {
     doNothing().when(dailyMissionService).delete(1L);
 
-    mockMvc.perform(delete("/api/admin/daily-missions/1")) // Path sudah sinkron
-        .andExpect(status().isOk()) // Sesuai return ResponseEntity.ok() di Controller
+    mockMvc.perform(delete("/api/admin/daily-missions/1"))
+        .andExpect(status().isOk())
         .andExpect(content().string("Daily Mission deleted successfully!"));
+  }
+
+  @Test
+  void testUpdateMissionNotFound() throws Exception {
+    when(dailyMissionService.update(eq(999L), any(DailyMission.class))).thenReturn(null);
+
+    DailyMissionRequest request = new DailyMissionRequest();
+    request.setTitle("Ghost Mission");
+
+    mockMvc.perform(put("/api/admin/daily-missions/999")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
   }
 }

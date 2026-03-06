@@ -50,23 +50,16 @@ class DailyMissionServiceImplTests {
 
   @Test
   void testCreateMission() {
-    // Beritahu Mockito: "Jika ada DailyMission apapun yang di-save, kembalikan objek 'mission' yang sudah kita set di atas"
     when(dailyMissionRepository.save(any(DailyMission.class))).thenReturn(mission);
-
-    // Eksekusi service
     DailyMission created = dailyMissionService.create(mission);
-
-    // Validasi
-    assertNotNull(created, "Objek yang dibuat tidak boleh null");
-    assertEquals("Membaca Berita", created.getTitle(), "Title harus sesuai dengan yang di-mock");
+    assertNotNull(created);
+    assertEquals("Membaca Berita", created.getTitle());
     verify(dailyMissionRepository, times(1)).save(any(DailyMission.class));
   }
 
   @Test
   void testUpdateMission() {
-    // Mock mencari mission lama
     when(dailyMissionRepository.findById(1L)).thenReturn(Optional.of(mission));
-    // Mock menyimpan mission yang sudah diupdate
     when(dailyMissionRepository.save(any(DailyMission.class))).thenReturn(mission);
 
     DailyMission updatedData = new DailyMission();
@@ -83,7 +76,6 @@ class DailyMissionServiceImplTests {
 
   @Test
   void testUpdateMissionNotFound() {
-    // Skenario jika ID tidak ditemukan untuk menaikkan coverage baris 'orElse(null)'
     when(dailyMissionRepository.findById(99L)).thenReturn(Optional.empty());
 
     DailyMission result = dailyMissionService.update(99L, new DailyMission());
@@ -93,7 +85,6 @@ class DailyMissionServiceImplTests {
 
   @Test
   void testDeleteMission() {
-    // Karena deleteById mengembalikan void, kita cukup verifikasi pemanggilannya
     doNothing().when(dailyMissionRepository).deleteById(1L);
 
     dailyMissionService.delete(1L);
