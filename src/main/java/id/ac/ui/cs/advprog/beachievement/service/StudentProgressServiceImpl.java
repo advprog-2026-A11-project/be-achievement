@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
-import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class StudentProgressServiceImpl implements StudentProgressService {
