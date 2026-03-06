@@ -151,6 +151,11 @@ jobs:
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
             DOCKER_HUB_REPO_NAME=${{ secrets.DOCKER_HUB_REPO_NAME }}
+            SPRING_DATASOURCE_URL=${{ secrets.DB_URL }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }}
+            CORS_ALLOWED_ORIGINS=${{ secrets.FRONTEND_URL }}
+            EOL
             EOL
             docker compose up -d
             docker ps
