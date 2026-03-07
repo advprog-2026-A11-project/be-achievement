@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Data
 @Getter
 @Setter
 @Table(name = "achievements")
@@ -16,4 +17,5 @@ public class Achievement {
   private String title;
   private String description;
   private Integer milestone;
+
 }

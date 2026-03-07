@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
 import id.ac.ui.cs.advprog.beachievement.model.Achievement;
+import id.ac.ui.cs.advprog.beachievement.model.AchievementRequest;
 import id.ac.ui.cs.advprog.beachievement.service.AchievementService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,12 @@ public class AchievementController {
   }
 
   @PostMapping
-  public ResponseEntity<Achievement> createAchievement(@RequestBody Achievement achievement) {
+  public ResponseEntity<Achievement> createAchievement(@RequestBody AchievementRequest request) {
+    Achievement achievement = new Achievement();
+    achievement.setTitle(request.getTitle());
+    achievement.setDescription(request.getDescription());
+    achievement.setMilestone(request.getMilestone());
+
     return new ResponseEntity<>(achievementService.create(achievement), HttpStatus.CREATED);
   }
 
