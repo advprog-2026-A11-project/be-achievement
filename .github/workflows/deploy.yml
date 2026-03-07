@@ -25,8 +25,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'linter.yml',
-              branch: 'main',
-              event: 'push',
+              event: 'pull_request',
               status: 'completed',
               per_page: 5
             });
