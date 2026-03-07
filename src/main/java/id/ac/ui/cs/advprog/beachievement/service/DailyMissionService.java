@@ -4,11 +4,11 @@ import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import java.util.List;
 
 public interface DailyMissionService {
-  List<DailyMission> findAll();
-
   DailyMission create(DailyMission mission);
 
-  DailyMission update(String id, DailyMission mission);
+  List<DailyMission> findAll();
 
-  void delete(String id);
+  DailyMission update(Long id, DailyMission mission);
+
+  void delete(Long id);
 }

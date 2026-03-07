@@ -8,12 +8,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class DailyMissionServiceImpl implements DailyMissionService {
-  @Autowired
-  private DailyMissionRepository dailyMissionRepository;
+  private final DailyMissionRepository dailyMissionRepository;
 
-  @Override
-  public List<DailyMission> findAll() {
-    return dailyMissionRepository.findAll();
+  public DailyMissionServiceImpl(DailyMissionRepository dailyMissionRepository) {
+    this.dailyMissionRepository = dailyMissionRepository;
   }
 
   @Override
@@ -22,19 +20,24 @@ public class DailyMissionServiceImpl implements DailyMissionService {
   }
 
   @Override
-  public DailyMission update(String id, DailyMission mission) {
-    DailyMission existing = dailyMissionRepository.findById(id).orElse(null);
-    if (existing != null) {
-      existing.setTitle(mission.getTitle());
-      existing.setRequirement(mission.getRequirement());
-      existing.setActive(mission.isActive());
-      return dailyMissionRepository.save(existing);
-    }
-    return null;
+  public List<DailyMission> findAll() {
+    return dailyMissionRepository.findAll();
   }
 
   @Override
-  public void delete(String id) {
+  public DailyMission update(Long id, DailyMission updatedData) {
+    return dailyMissionRepository.findById(id).map(mission -> {
+      mission.setTitle(updatedData.getTitle());
+      mission.setDescription(updatedData.getDescription());
+      mission.setTargetMilestone(updatedData.getTargetMilestone());
+      mission.setRewardPoints(updatedData.getRewardPoints());
+      mission.setActiveDate(updatedData.getActiveDate());
+      return dailyMissionRepository.save(mission);
+    }).orElse(null);
+  }
+
+  @Override
+  public void delete(Long id) {
     dailyMissionRepository.deleteById(id);
   }
 }
