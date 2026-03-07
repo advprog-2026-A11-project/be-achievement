@@ -6,13 +6,11 @@ on:
     types:
       - completed
 
-permissions:
-  contents: read
-  actions: read
-
 jobs:
   check-workflow-status:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     outputs:
       all_success: ${{ steps.check-status.outputs.all_success }}
     steps:
@@ -113,6 +111,8 @@ jobs:
     needs: check-workflow-status
     if: ${{ needs.check-workflow-status.outputs.all_success == 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
