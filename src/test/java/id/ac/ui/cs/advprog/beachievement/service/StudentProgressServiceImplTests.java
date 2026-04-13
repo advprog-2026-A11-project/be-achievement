@@ -54,7 +54,7 @@ class StudentProgressServiceImplTests {
   }
 
   @Test
-  void testGetStudentMissions_WithExistingMission() {
+  void testGetStudentMissionsWithExistingMission() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
@@ -71,7 +71,7 @@ class StudentProgressServiceImplTests {
   }
 
   @Test
-  void testGetStudentMissions_WithoutExistingMission() {
+  void testGetStudentMissionsWithoutExistingMission() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
@@ -90,7 +90,7 @@ class StudentProgressServiceImplTests {
   }
 
   @Test
-  void testUpdateProgress_Valid_NotCompleted() {
+  void testUpdateProgressValidNotCompleted() {
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
         .thenReturn(Optional.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
@@ -103,7 +103,7 @@ class StudentProgressServiceImplTests {
   }
 
   @Test
-  void testUpdateProgress_Valid_Completed() {
+  void testUpdateProgressValidCompleted() {
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
         .thenReturn(Optional.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
@@ -116,7 +116,7 @@ class StudentProgressServiceImplTests {
   }
 
   @Test
-  void testUpdateProgress_NotFound() {
+  void testUpdateProgressNotFound() {
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 99L))
         .thenReturn(Optional.empty());
 

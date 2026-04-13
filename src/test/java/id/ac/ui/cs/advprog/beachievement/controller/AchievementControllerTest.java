@@ -72,7 +72,7 @@ class AchievementControllerTest {
   }
 
   @Test
-  void testUpdateAchievement_Success() throws Exception {
+  void testUpdateAchievementSuccess() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Updated Title");
     request.setDescription("Updated Description");
@@ -94,7 +94,7 @@ class AchievementControllerTest {
   }
 
   @Test
-  void testUpdateAchievement_NotFound() throws Exception {
+  void testUpdateAchievementNotFound() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Updated Title");
 

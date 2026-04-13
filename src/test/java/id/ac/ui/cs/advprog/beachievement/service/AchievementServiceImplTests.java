@@ -62,7 +62,7 @@ class AchievementServiceImplTests {
   }
 
   @Test
-  void testFindById_Found() {
+  void testFindByIdFound() {
     when(achievementRepository.findById(1L)).thenReturn(Optional.of(achievement));
     Achievement found = achievementService.findById(1L);
     assertNotNull(found);
@@ -70,14 +70,14 @@ class AchievementServiceImplTests {
   }
 
   @Test
-  void testFindById_NotFound() {
+  void testFindByIdNotFound() {
     when(achievementRepository.findById(1L)).thenReturn(Optional.empty());
     Achievement found = achievementService.findById(1L);
     assertNull(found);
   }
 
   @Test
-  void testUpdate_Found() {
+  void testUpdateFound() {
     Achievement updatedInfo = new Achievement();
     updatedInfo.setTitle("Updated Title");
     updatedInfo.setDescription("Updated Desc");
@@ -92,7 +92,7 @@ class AchievementServiceImplTests {
   }
 
   @Test
-  void testUpdate_NotFound() {
+  void testUpdateNotFound() {
     Achievement updatedInfo = new Achievement();
     when(achievementRepository.findById(1L)).thenReturn(Optional.empty());
 

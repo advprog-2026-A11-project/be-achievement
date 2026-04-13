@@ -53,7 +53,7 @@ class StudentProgressControllerTest {
   @Test
   void testUpdateProgress() throws Exception {
     UUID userId = UUID.randomUUID();
-    Long missionId = 10L;
+    final Long missionId = 10L;
     Integer progress = 5;
 
     Map<String, Integer> body = new HashMap<>();
