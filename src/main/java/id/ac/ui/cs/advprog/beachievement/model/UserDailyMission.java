@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.beachievement.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_daily_mission")
@@ -13,7 +14,7 @@ public class UserDailyMission {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  private String userId;
+  private UUID userId;
 
   @ManyToOne
   @JoinColumn(name = "mission_id")

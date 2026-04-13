@@ -10,5 +10,7 @@ public interface AchievementService {
 
   Achievement findById(Long id);
 
+  Achievement update(Long id, Achievement achievement);
+
   void delete(Long id);
 }

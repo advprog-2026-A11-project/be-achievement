@@ -18,7 +18,6 @@ public class DailyMissionController {
     this.dailyMissionService = dailyMissionService;
   }
 
-  // TAMBAHKAN INI - Inilah yang dicari oleh Tes kamu!
   @PostMapping
   public ResponseEntity<DailyMission> create(@RequestBody DailyMissionRequest request) {
     DailyMission mission = new DailyMission();
@@ -26,6 +25,7 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
+    mission.setActiveDate(request.getActiveDate());
 
     return new ResponseEntity<>(dailyMissionService.create(mission), HttpStatus.CREATED);
   }
@@ -43,6 +43,7 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
+    mission.setActiveDate(request.getActiveDate());
 
     return ResponseEntity.ok(dailyMissionService.update(id, mission));
   }
