@@ -41,8 +41,8 @@ public class AchievementController {
 
   @PutMapping("/{id}")
   public ResponseEntity<Achievement> updateAchievement(
-    @PathVariable Long id,
-    @RequestBody AchievementRequest request) {
+      @PathVariable Long id,
+      @RequestBody AchievementRequest request) {
     Achievement achievement = new Achievement();
     achievement.setTitle(request.getTitle());
     achievement.setDescription(request.getDescription());
@@ -50,7 +50,7 @@ public class AchievementController {
 
     Achievement updated = achievementService.update(id, achievement);
     if (updated == null) {
-        return ResponseEntity.notFound().build();
+      return ResponseEntity.notFound().build();
     }
     return ResponseEntity.ok(updated);
   }

@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public interface StudentProgressService {
   List<UserDailyMission> getStudentMissions(UUID userId);
+
   UserDailyMission updateProgress(UUID userId, Long missionId, Integer progress);
 }
