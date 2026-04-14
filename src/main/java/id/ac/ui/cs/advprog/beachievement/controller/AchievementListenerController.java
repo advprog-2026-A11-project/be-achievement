@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/events")
 public class AchievementListenerController {
 
-    @Autowired
-    private AchievementListenerService achievementListenerService;
+  @Autowired
+  private AchievementListenerService achievementListenerService;
 
-    @PostMapping("/quiz-completed")
-    public ResponseEntity<String> receiveQuizCompletedEvent(@RequestBody QuizCompletedEvent event) {
-        achievementListenerService.processQuizCompleted(event);
-        return ResponseEntity.ok("Quiz completed event received successfully");
-    }
+  @PostMapping("/quiz-completed")
+  public ResponseEntity<String> receiveQuizCompletedEvent(@RequestBody QuizCompletedEvent event) {
+    achievementListenerService.processQuizCompleted(event);
+    return ResponseEntity.ok("Quiz completed event received successfully");
+  }
 }

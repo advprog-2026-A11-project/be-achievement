@@ -42,11 +42,11 @@ class AchievementListenerControllerTest {
         .processQuizCompleted(any(QuizCompletedEvent.class));
 
     mockMvc.perform(post("/api/events/quiz-completed")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(event)))
-      .andExpect(status().isOk())
-      .andExpect(content().string(
-          "Quiz completed event received successfully"));
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(content().string(
+            "Quiz completed event received successfully"));
 
     verify(achievementListenerService, times(1))
         .processQuizCompleted(any(QuizCompletedEvent.class));
