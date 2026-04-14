@@ -22,30 +22,33 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 class AchievementListenerControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockitoBean
-    private AchievementListenerService achievementListenerService;
+  @MockitoBean
+  private AchievementListenerService achievementListenerService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
-    @Test
-    void testReceiveQuizCompletedEvent() throws Exception {
-        QuizCompletedEvent event = new QuizCompletedEvent();
-        event.setUserId(UUID.randomUUID());
-        event.setScore(90);
-        event.setAccuracy(95.0);
+  @Test
+  void testReceiveQuizCompletedEvent() throws Exception {
+    QuizCompletedEvent event = new QuizCompletedEvent();
+    event.setUserId(UUID.randomUUID());
+    event.setScore(90);
+    event.setAccuracy(95.0);
 
-        doNothing().when(achievementListenerService).processQuizCompleted(any(QuizCompletedEvent.class));
+    doNothing().when(achievementListenerService)
+        .processQuizCompleted(any(QuizCompletedEvent.class));
 
-        mockMvc.perform(post("/api/events/quiz-completed")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(event)))
-            .andExpect(status().isOk())
-            .andExpect(content().string("Quiz completed event received successfully"));
+    mockMvc.perform(post("/api/events/quiz-completed")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+      .andExpect(status().isOk())
+      .andExpect(content().string(
+          "Quiz completed event received successfully"));
 
-        verify(achievementListenerService, times(1)).processQuizCompleted(any(QuizCompletedEvent.class));
-    }
+    verify(achievementListenerService, times(1))
+        .processQuizCompleted(any(QuizCompletedEvent.class));
+  }
 }
