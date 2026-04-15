@@ -70,4 +70,39 @@ class AchievementControllerTest {
 
     verify(achievementService, times(1)).delete(1L);
   }
+
+  @Test
+  void testUpdateAchievementSuccess() throws Exception {
+    AchievementRequest request = new AchievementRequest();
+    request.setTitle("Updated Title");
+    request.setDescription("Updated Description");
+    request.setMilestone(50);
+
+    Achievement updated = new Achievement();
+    updated.setId(1L);
+    updated.setTitle("Updated Title");
+    updated.setDescription("Updated Description");
+    updated.setMilestone(50);
+
+    when(achievementService.update(eq(1L), any(Achievement.class))).thenReturn(updated);
+
+    mockMvc.perform(put("/api/admin/achievements/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.title").value("Updated Title"));
+  }
+
+  @Test
+  void testUpdateAchievementNotFound() throws Exception {
+    AchievementRequest request = new AchievementRequest();
+    request.setTitle("Updated Title");
+
+    when(achievementService.update(eq(1L), any(Achievement.class))).thenReturn(null);
+
+    mockMvc.perform(put("/api/admin/achievements/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isNotFound());
+  }
 }
