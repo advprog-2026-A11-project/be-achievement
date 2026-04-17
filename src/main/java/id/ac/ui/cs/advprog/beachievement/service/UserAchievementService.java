@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserAchievementService {
-    List<UserAchievement> getUnlockedAchievements(UUID userId);
+  List<UserAchievement> getUnlockedAchievements(UUID userId);
 
-    List<UserAchievement> getPublicAchievements(UUID userId);
+  List<UserAchievement> getPublicAchievements(UUID userId);
 
-    void checkAndUnlockAchievements(UUID userId, int quizCount);
+  void checkAndUnlockAchievements(UUID userId, int quizCount);
 }

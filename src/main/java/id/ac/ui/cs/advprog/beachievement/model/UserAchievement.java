@@ -7,7 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "user_achievements", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "achievement_id" }))
+@Table(name = "user_achievements",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "achievement_id"}))
 @Getter
 @Setter
 public class UserAchievement {

@@ -11,12 +11,13 @@ import lombok.Setter;
 @Setter
 public class UserQuizCount {
 
-    @Id
-    @Column(name = "user_id")
-    private UUID userId;
+  @Id
+  @Column(name = "user_id")
+  private UUID userId;
 
-    @Column(name = "quiz_count", nullable = false)
-    private Integer quizCount = 0;
-    @Column(name = "last_processed_event_id")
-    private String lastProcessedEventId;
+  @Column(name = "quiz_count", nullable = false)
+  private Integer quizCount = 0;
+
+  @Column(name = "last_processed_event_id")
+  private String lastProcessedEventId;
 }

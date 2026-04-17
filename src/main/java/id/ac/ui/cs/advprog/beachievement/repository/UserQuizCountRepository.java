@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserQuizCountRepository extends JpaRepository<UserQuizCount, UUID> {
-    Optional<UserQuizCount> findByUserId(UUID userId);
+  Optional<UserQuizCount> findByUserId(UUID userId);
 }
