@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.beachievement.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 import id.ac.ui.cs.advprog.beachievement.model.Achievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
 import java.util.Arrays;
@@ -18,13 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AchievementServiceImplTests {
-
   @Mock
   private AchievementRepository achievementRepository;
-
   @InjectMocks
   private AchievementServiceImpl achievementService;
-
   private Achievement achievement;
 
   @BeforeEach

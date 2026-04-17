@@ -17,14 +17,17 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(StudentProgressController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 class StudentProgressControllerTest {
 
   @Autowired
@@ -37,6 +40,7 @@ class StudentProgressControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
+  @WithMockUser(roles = "STUDENT")
   void testGetMissions() throws Exception {
     UUID userId = UUID.randomUUID();
     UserDailyMission mission = new UserDailyMission();
@@ -51,6 +55,7 @@ class StudentProgressControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "STUDENT")
   void testUpdateProgress() throws Exception {
     UUID userId = UUID.randomUUID();
     final Long missionId = 10L;
@@ -68,8 +73,8 @@ class StudentProgressControllerTest {
         .thenReturn(updatedMission);
 
     mockMvc.perform(put("/api/student-progress/" + userId + "/missions/" + missionId + "/progress")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(body)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(body)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currentProgress").value(5));
   }

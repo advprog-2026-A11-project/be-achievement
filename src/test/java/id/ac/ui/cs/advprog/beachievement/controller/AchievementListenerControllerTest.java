@@ -12,14 +12,17 @@ import id.ac.ui.cs.advprog.beachievement.service.AchievementListenerService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AchievementListenerController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 class AchievementListenerControllerTest {
 
   @Autowired
@@ -32,6 +35,7 @@ class AchievementListenerControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
+  @WithMockUser(roles = "STUDENT")
   void testReceiveQuizCompletedEvent() throws Exception {
     QuizCompletedEvent event = new QuizCompletedEvent();
     event.setUserId(UUID.randomUUID());
@@ -42,11 +46,10 @@ class AchievementListenerControllerTest {
         .processQuizCompleted(any(QuizCompletedEvent.class));
 
     mockMvc.perform(post("/api/events/quiz-completed")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(event)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
         .andExpect(status().isOk())
-        .andExpect(content().string(
-            "Quiz completed event received successfully"));
+        .andExpect(content().string("Quiz completed event received successfully"));
 
     verify(achievementListenerService, times(1))
         .processQuizCompleted(any(QuizCompletedEvent.class));

@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.model.DailyMissionRequest;
 import id.ac.ui.cs.advprog.beachievement.service.DailyMissionService;
 import java.util.List;
+import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,9 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
-    mission.setActiveDate(request.getActiveDate());
+    mission.setActiveDate(request.getActiveDate() != null
+        ? request.getActiveDate()
+        : LocalDate.now());
 
     return new ResponseEntity<>(dailyMissionService.create(mission), HttpStatus.CREATED);
   }
@@ -45,7 +48,11 @@ public class DailyMissionController {
     mission.setRewardPoints(request.getRewardPoints());
     mission.setActiveDate(request.getActiveDate());
 
-    return ResponseEntity.ok(dailyMissionService.update(id, mission));
+    DailyMission updated = dailyMissionService.update(id, mission);
+    if (updated == null) {
+      return ResponseEntity.notFound().build();
+    }
+    return ResponseEntity.ok(updated);
   }
 
   @DeleteMapping("/{id}")

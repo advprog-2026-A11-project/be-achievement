@@ -12,14 +12,17 @@ import id.ac.ui.cs.advprog.beachievement.model.DailyMissionRequest;
 import id.ac.ui.cs.advprog.beachievement.service.DailyMissionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(DailyMissionController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 class DailyMissionControllerTest {
 
   @Autowired
@@ -32,6 +35,7 @@ class DailyMissionControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testCreateMission() throws Exception {
     DailyMissionRequest request = new DailyMissionRequest();
     request.setTitle("Misi 1");
@@ -50,6 +54,7 @@ class DailyMissionControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testDeleteMission() throws Exception {
     doNothing().when(dailyMissionService).delete(1L);
 
@@ -59,6 +64,7 @@ class DailyMissionControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testUpdateMissionNotFound() throws Exception {
     when(dailyMissionService.update(eq(999L), any(DailyMission.class))).thenReturn(null);
 
@@ -68,6 +74,6 @@ class DailyMissionControllerTest {
     mockMvc.perform(put("/api/admin/daily-missions/999")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk());
+        .andExpect(status().isNotFound());
   }
 }

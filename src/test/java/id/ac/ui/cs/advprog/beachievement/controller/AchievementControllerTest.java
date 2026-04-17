@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -12,14 +13,17 @@ import id.ac.ui.cs.advprog.beachievement.service.AchievementService;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(AchievementController.class)
 @ActiveProfiles("test")
+@AutoConfigureMockMvc(addFilters = false)
 class AchievementControllerTest {
 
   @Autowired
@@ -32,6 +36,7 @@ class AchievementControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testCreateAchievement() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Master Reader");
@@ -45,13 +50,14 @@ class AchievementControllerTest {
     when(achievementService.create(any(Achievement.class))).thenReturn(saved);
 
     mockMvc.perform(post("/api/admin/achievements")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.title").value("Master Reader"));
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testGetAllAchievements() throws Exception {
     when(achievementService.findAll()).thenReturn(Arrays.asList(new Achievement()));
 
@@ -61,6 +67,7 @@ class AchievementControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testDeleteAchievement() throws Exception {
     doNothing().when(achievementService).delete(1L);
 
@@ -72,6 +79,7 @@ class AchievementControllerTest {
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testUpdateAchievementSuccess() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Updated Title");
@@ -87,13 +95,14 @@ class AchievementControllerTest {
     when(achievementService.update(eq(1L), any(Achievement.class))).thenReturn(updated);
 
     mockMvc.perform(put("/api/admin/achievements/1")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.title").value("Updated Title"));
   }
 
   @Test
+  @WithMockUser(roles = "ADMIN")
   void testUpdateAchievementNotFound() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Updated Title");
@@ -101,8 +110,8 @@ class AchievementControllerTest {
     when(achievementService.update(eq(1L), any(Achievement.class))).thenReturn(null);
 
     mockMvc.perform(put("/api/admin/achievements/1")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
   }
 }
