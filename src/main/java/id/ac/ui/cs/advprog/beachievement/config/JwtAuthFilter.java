@@ -22,75 +22,75 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    @Value("${auth.service.url}")
-    private String authServiceUrl;
+  @Value("${auth.service.url}")
+  private String authServiceUrl;
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+  private final HttpClient httpClient = HttpClient.newHttpClient();
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain filterChain)
+      throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+    String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authHeader.substring(7);
-
-        try {
-            HttpRequest authRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(authServiceUrl + "/api/auth/me"))
-                    .header("Authorization", "Bearer " + token)
-                    .GET()
-                    .build();
-
-            HttpResponse<String> authResponse = httpClient.send(
-                    authRequest, HttpResponse.BodyHandlers.ofString());
-
-            if (authResponse.statusCode() != 200) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            JsonNode body = objectMapper.readTree(authResponse.body());
-            JsonNode profile = body.get("profile");
-
-            if (profile == null || profile.isNull()) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            JsonNode profileId = profile.get("id");
-            JsonNode profileRole = profile.get("role");
-            JsonNode profileIsActive = profile.get("isActive");
-
-            if (profileId == null || profileRole == null || profileIsActive == null
-                    || !profileIsActive.asBoolean()) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-
-            String userId = profileId.asText();
-            String role = profileRole.asText();
-
-
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userId,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        } catch (Exception e) {
-            logger.warn("Failed to validate token with auth service: " + e.getMessage());
-        }
-
-        filterChain.doFilter(request, response);
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      filterChain.doFilter(request, response);
+      return;
     }
+
+    String token = authHeader.substring(7);
+
+    try {
+      HttpRequest authRequest = HttpRequest.newBuilder()
+          .uri(URI.create(authServiceUrl + "/api/auth/me"))
+          .header("Authorization", "Bearer " + token)
+          .GET()
+          .build();
+
+      HttpResponse<String> authResponse = httpClient.send(
+          authRequest, HttpResponse.BodyHandlers.ofString());
+
+      if (authResponse.statusCode() != 200) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
+      JsonNode body = objectMapper.readTree(authResponse.body());
+      JsonNode profile = body.get("profile");
+
+      if (profile == null || profile.isNull()) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
+      JsonNode profileId = profile.get("id");
+      JsonNode profileRole = profile.get("role");
+      JsonNode profileIsActive = profile.get("isActive");
+
+      if (profileId == null || profileRole == null || profileIsActive == null
+          || !profileIsActive.asBoolean()) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+
+      String userId = profileId.asText();
+      String role = profileRole.asText();
+
+      UsernamePasswordAuthenticationToken authentication =
+          new UsernamePasswordAuthenticationToken(
+              userId,
+              null,
+              List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    } catch (Exception e) {
+      logger.warn("Failed to validate token with auth service: " + e.getMessage());
+    }
+
+    filterChain.doFilter(request, response);
+  }
 }

@@ -13,44 +13,45 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserAchievementServiceImpl implements UserAchievementService {
 
-    private final UserAchievementRepository userAchievementRepository;
-    private final AchievementRepository achievementRepository;
+  private final UserAchievementRepository userAchievementRepository;
+  private final AchievementRepository achievementRepository;
 
-    public UserAchievementServiceImpl(UserAchievementRepository userAchievementRepository,
-            AchievementRepository achievementRepository) {
-        this.userAchievementRepository = userAchievementRepository;
-        this.achievementRepository = achievementRepository;
-    }
+  public UserAchievementServiceImpl(
+      UserAchievementRepository userAchievementRepository,
+      AchievementRepository achievementRepository) {
+    this.userAchievementRepository = userAchievementRepository;
+    this.achievementRepository = achievementRepository;
+  }
 
-    @Override
-    public List<UserAchievement> getUnlockedAchievements(UUID userId) {
-        return userAchievementRepository.findByUserId(userId);
-    }
+  @Override
+  public List<UserAchievement> getUnlockedAchievements(UUID userId) {
+    return userAchievementRepository.findByUserId(userId);
+  }
 
-    @Override
-    public List<UserAchievement> getPublicAchievements(UUID userId) {
-        return userAchievementRepository.findByUserIdAndIsShowcasedTrue(userId);
-    }
+  @Override
+  public List<UserAchievement> getPublicAchievements(UUID userId) {
+    return userAchievementRepository.findByUserIdAndIsShowcasedTrue(userId);
+  }
 
-    @Override
-    @Transactional
-    public void checkAndUnlockAchievements(UUID userId, int quizCount) {
-        List<Achievement> allAchievements = achievementRepository.findAll();
+  @Override
+  @Transactional
+  public void checkAndUnlockAchievements(UUID userId, int quizCount) {
+    List<Achievement> allAchievements = achievementRepository.findAll();
 
-        for (Achievement achievement : allAchievements) {
-            if (quizCount >= achievement.getMilestone()) {
-                boolean alreadyUnlocked = userAchievementRepository
-                        .existsByUserIdAndAchievementId(userId, achievement.getId());
+    for (Achievement achievement : allAchievements) {
+      if (quizCount >= achievement.getMilestone()) {
+        boolean alreadyUnlocked = userAchievementRepository
+            .existsByUserIdAndAchievementId(userId, achievement.getId());
 
-                if (!alreadyUnlocked) {
-                    UserAchievement ua = new UserAchievement();
-                    ua.setUserId(userId);
-                    ua.setAchievement(achievement);
-                    ua.setUnlockedAt(LocalDateTime.now());
-                    ua.setShowcased(false);
-                    userAchievementRepository.save(ua);
-                }
-            }
+        if (!alreadyUnlocked) {
+          UserAchievement ua = new UserAchievement();
+          ua.setUserId(userId);
+          ua.setAchievement(achievement);
+          ua.setUnlockedAt(LocalDateTime.now());
+          ua.setShowcased(false);
+          userAchievementRepository.save(ua);
         }
+      }
     }
+  }
 }

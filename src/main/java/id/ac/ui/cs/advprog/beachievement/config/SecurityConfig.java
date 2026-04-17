@@ -13,37 +13,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+  private final JwtAuthFilter jwtAuthFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
+  public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    this.jwtAuthFilter = jwtAuthFilter;
+  }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF (pakai JWT, bukan cookie)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Tidak
-                                                                                                              // ada
-                                                                                                              // session
-                .authorizeHttpRequests(auth -> auth
-                        // Endpoint admin — hanya ADMIN
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // Endpoint student progress — harus login (STUDENT atau ADMIN)
-                        .requestMatchers("/api/student-progress/**").authenticated()
-                        // Endpoint achievements (me) — harus login
-                        .requestMatchers("/api/achievements/me").authenticated()
-                        // Endpoint achievements public — bebas (tidak perlu login untuk lihat profil
-                        // publik)
-                        .requestMatchers("/api/achievements/*/public").permitAll()
-                        // Endpoint event dari be-bacaan — KEPUTUSAN: pakai Opsi A (forward token)
-                        // Jadi harus authenticated (be-bacaan forward token user)
-                        .requestMatchers("/api/events/**").authenticated()
-                        // Semua yang lain — bebas (bisa diubah nanti)
-                        .anyRequest().permitAll())
-                // Pasang filter kita sebelum filter default Spring Security
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers("/api/student-progress/**").authenticated()
+            .requestMatchers("/api/achievements/me").authenticated()
+            .requestMatchers("/api/achievements/*/public").permitAll()
+            .requestMatchers("/api/events/**").authenticated()
+            .anyRequest().permitAll())
+        .addFilterBefore(jwtAuthFilter,
+            UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+  }
 }
