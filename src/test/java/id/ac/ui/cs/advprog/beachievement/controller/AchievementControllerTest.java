@@ -53,7 +53,8 @@ class AchievementControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.title").value("Master Reader"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.title").value("Master Reader"));
   }
 
   @Test
@@ -63,7 +64,8 @@ class AchievementControllerTest {
 
     mockMvc.perform(get("/api/admin/achievements"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.length()").value(1));
   }
 
   @Test
@@ -73,7 +75,8 @@ class AchievementControllerTest {
 
     mockMvc.perform(delete("/api/admin/achievements/1"))
         .andExpect(status().isOk())
-        .andExpect(content().string("Achievement deleted successfully!"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("Achievement deleted successfully"));
 
     verify(achievementService, times(1)).delete(1L);
   }
@@ -98,7 +101,8 @@ class AchievementControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.title").value("Updated Title"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.title").value("Updated Title"));
   }
 
   @Test
@@ -106,12 +110,16 @@ class AchievementControllerTest {
   void testUpdateAchievementNotFound() throws Exception {
     AchievementRequest request = new AchievementRequest();
     request.setTitle("Updated Title");
+    request.setDescription("Updated Description");
+    request.setMilestone(10);
 
     when(achievementService.update(eq(1L), any(Achievement.class))).thenReturn(null);
 
     mockMvc.perform(put("/api/admin/achievements/1")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.success").value(false))
+        .andExpect(jsonPath("$.message").value("Achievement not found"));
   }
 }

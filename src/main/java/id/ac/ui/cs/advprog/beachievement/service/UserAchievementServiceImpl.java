@@ -54,4 +54,14 @@ public class UserAchievementServiceImpl implements UserAchievementService {
       }
     }
   }
+
+  @Override
+  @Transactional
+  public void setFeaturedAchievement(UUID userId, Long achievementId, boolean showcased) {
+    userAchievementRepository.findByUserIdAndAchievementId(userId, achievementId)
+        .ifPresent(ua -> {
+          ua.setShowcased(showcased);
+          userAchievementRepository.save(ua);
+        });
+  }
 }

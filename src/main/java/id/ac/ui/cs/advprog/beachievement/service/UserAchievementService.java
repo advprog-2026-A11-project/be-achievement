@@ -10,4 +10,6 @@ public interface UserAchievementService {
   List<UserAchievement> getPublicAchievements(UUID userId);
 
   void checkAndUnlockAchievements(UUID userId, int quizCount);
+
+  void setFeaturedAchievement(UUID userId, Long achievementId, boolean showcased);
 }

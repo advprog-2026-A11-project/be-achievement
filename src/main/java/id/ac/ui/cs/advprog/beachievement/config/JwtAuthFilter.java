@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +26,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   @Value("${auth.service.url}")
   private String authServiceUrl;
 
-  private final HttpClient httpClient = HttpClient.newHttpClient();
+  private final HttpClient httpClient = HttpClient.newBuilder()
+      .connectTimeout(Duration.ofSeconds(3))
+      .build();
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
@@ -47,6 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       HttpRequest authRequest = HttpRequest.newBuilder()
           .uri(URI.create(authServiceUrl + "/api/auth/me"))
           .header("Authorization", "Bearer " + token)
+          .timeout(Duration.ofSeconds(5))
           .GET()
           .build();
 

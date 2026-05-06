@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
+import id.ac.ui.cs.advprog.beachievement.dto.ApiResponse;
 import id.ac.ui.cs.advprog.beachievement.model.UserDailyMission;
 import id.ac.ui.cs.advprog.beachievement.service.StudentProgressService;
 import java.util.List;
@@ -19,16 +20,18 @@ public class StudentProgressController {
   }
 
   @GetMapping("/{userId}/missions")
-  public ResponseEntity<List<UserDailyMission>> getMissions(@PathVariable UUID userId) {
-    return ResponseEntity.ok(studentProgressService.getStudentMissions(userId));
+  public ResponseEntity<ApiResponse<List<UserDailyMission>>> getMissions(@PathVariable UUID userId) {
+    List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
+    return ResponseEntity.ok(ApiResponse.success("Student missions retrieved successfully", missions));
   }
 
   @PutMapping("/{userId}/missions/{missionId}/progress")
-  public ResponseEntity<UserDailyMission> updateProgress(
+  public ResponseEntity<ApiResponse<UserDailyMission>> updateProgress(
       @PathVariable UUID userId,
       @PathVariable Long missionId,
       @RequestBody Map<String, Integer> body) {
     Integer progress = body.get("progress");
-    return ResponseEntity.ok(studentProgressService.updateProgress(userId, missionId, progress));
+    UserDailyMission updated = studentProgressService.updateProgress(userId, missionId, progress);
+    return ResponseEntity.ok(ApiResponse.success("Mission progress updated successfully", updated));
   }
 }

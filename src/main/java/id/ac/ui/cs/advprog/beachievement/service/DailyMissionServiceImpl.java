@@ -32,6 +32,8 @@ public class DailyMissionServiceImpl implements DailyMissionService {
       mission.setTargetMilestone(updatedData.getTargetMilestone());
       mission.setRewardPoints(updatedData.getRewardPoints());
       mission.setActiveDate(updatedData.getActiveDate());
+      mission.setMissionType(updatedData.getMissionType());
+      mission.setActive(updatedData.isActive());
       return dailyMissionRepository.save(mission);
     }).orElse(null);
   }

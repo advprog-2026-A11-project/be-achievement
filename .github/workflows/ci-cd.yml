@@ -1,0 +1,118 @@
+name: Deploy Backend (Main)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: be-achievement-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Java 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Run tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew test
+
+      - name: Build bootJar
+        run: |
+          ./gradlew clean bootJar -x test
+
+      - name: Prepare app directory on EC2
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY || secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            mkdir -p ~/app-achievement/build/libs
+            rm -f ~/app-achievement/*.jar ~/app-achievement/build/libs/*.jar
+
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY || secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "~/app-achievement"
+
+      - name: Restart app on EC2
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY || secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            mkdir -p ~/app-achievement
+            cd ~/app-achievement
+
+            if [ -n "${{ secrets.APP_ENV_FILE }}" ]; then
+              printf "%s\n" "${{ secrets.APP_ENV_FILE }}" > .env
+            fi
+
+            JAR_FILE="$(ls -t *.jar build/libs/*.jar 2>/dev/null | grep -v -- '-plain\.jar$' | head -n 1 || true)"
+            if [ -z "$JAR_FILE" ]; then
+              echo "No runnable jar found in ~/app-achievement or ~/app-achievement/build/libs"
+              exit 1
+            fi
+
+            if [ -f app.pid ] && kill -0 "$(cat app.pid)" 2>/dev/null; then
+              kill "$(cat app.pid)" || true
+              sleep 2
+            fi
+            rm -f app.pid
+
+            if [ -f .env ]; then
+              set -a
+              . ./.env
+              set +a
+            fi
+
+            export SERVER_ADDRESS="${SERVER_ADDRESS:-0.0.0.0}"
+            export SERVER_PORT="${SERVER_PORT_ACHIEVEMENT:-8082}"
+
+            if command -v setsid >/dev/null 2>&1; then
+              setsid java -jar "$JAR_FILE" \
+                --server.address="$SERVER_ADDRESS" \
+                --server.port="$SERVER_PORT" > app.log 2>&1 < /dev/null &
+            else
+              nohup java -jar "$JAR_FILE" \
+                --server.address="$SERVER_ADDRESS" \
+                --server.port="$SERVER_PORT" > app.log 2>&1 < /dev/null &
+            fi
+            echo $! > app.pid
+
+            for i in {1..30}; do
+              if curl --silent --fail "http://127.0.0.1:${SERVER_PORT}/actuator/health" >/dev/null; then
+                echo "App is healthy"
+                exit 0
+              fi
+              sleep 2
+            done
+
+            echo "App failed to become healthy"
+            tail -n 120 app.log || true
+            exit 1

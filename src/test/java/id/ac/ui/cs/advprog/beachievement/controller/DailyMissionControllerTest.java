@@ -39,6 +39,8 @@ class DailyMissionControllerTest {
   void testCreateMission() throws Exception {
     DailyMissionRequest request = new DailyMissionRequest();
     request.setTitle("Misi 1");
+    request.setDescription("Selesaikan 1 bacaan");
+    request.setTargetMilestone(1);
 
     DailyMission saved = new DailyMission();
     saved.setId(1L);
@@ -50,7 +52,8 @@ class DailyMissionControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.title").value("Misi 1"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.title").value("Misi 1"));
   }
 
   @Test
@@ -60,7 +63,8 @@ class DailyMissionControllerTest {
 
     mockMvc.perform(delete("/api/admin/daily-missions/1"))
         .andExpect(status().isOk())
-        .andExpect(content().string("Daily Mission deleted successfully!"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("Daily mission deleted successfully"));
   }
 
   @Test
@@ -70,10 +74,14 @@ class DailyMissionControllerTest {
 
     DailyMissionRequest request = new DailyMissionRequest();
     request.setTitle("Ghost Mission");
+    request.setDescription("Does not exist");
+    request.setTargetMilestone(5);
 
     mockMvc.perform(put("/api/admin/daily-missions/999")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.success").value(false))
+        .andExpect(jsonPath("$.message").value("Daily mission not found"));
   }
 }

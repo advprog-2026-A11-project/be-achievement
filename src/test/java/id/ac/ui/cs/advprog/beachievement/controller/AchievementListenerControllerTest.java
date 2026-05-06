@@ -3,7 +3,7 @@ package id.ac.ui.cs.advprog.beachievement.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,8 @@ class AchievementListenerControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(event)))
         .andExpect(status().isOk())
-        .andExpect(content().string("Quiz completed event received successfully"));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message").value("Quiz completed event received successfully"));
 
     verify(achievementListenerService, times(1))
         .processQuizCompleted(any(QuizCompletedEvent.class));

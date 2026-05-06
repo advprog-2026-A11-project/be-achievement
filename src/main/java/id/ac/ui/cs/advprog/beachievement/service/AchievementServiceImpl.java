@@ -35,6 +35,8 @@ public class AchievementServiceImpl implements AchievementService {
       existing.setTitle(achievement.getTitle());
       existing.setDescription(achievement.getDescription());
       existing.setMilestone(achievement.getMilestone());
+      existing.setMilestoneType(achievement.getMilestoneType());
+      existing.setIconUrl(achievement.getIconUrl());
       return achievementRepository.save(existing);
     }).orElse(null);
   }

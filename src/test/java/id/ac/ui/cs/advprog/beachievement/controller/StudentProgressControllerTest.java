@@ -51,7 +51,8 @@ class StudentProgressControllerTest {
 
     mockMvc.perform(get("/api/student-progress/" + userId + "/missions"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.length()").value(1));
   }
 
   @Test
@@ -76,6 +77,7 @@ class StudentProgressControllerTest {
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(body)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.currentProgress").value(5));
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.currentProgress").value(5));
   }
 }
