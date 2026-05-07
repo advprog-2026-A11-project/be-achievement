@@ -34,6 +34,11 @@ public class UserAchievementController {
     this.userAchievementService = userAchievementService;
   }
 
+  /**
+   * Helper method to validate if the authenticated user matches the path
+   * variable.
+   * Extracts user identity from the SecurityContext populated by JwtAuthFilter.
+   */
   private void validateUserAccess(UUID pathUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication.getPrincipal() == null) {
