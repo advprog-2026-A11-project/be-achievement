@@ -16,8 +16,10 @@ public class AchievementListenerController {
   }
 
   @PostMapping("/quiz-completed")
-  public ResponseEntity<ApiResponse<Void>> receiveQuizCompletedEvent(@RequestBody QuizCompletedEvent event) {
+  public ResponseEntity<ApiResponse<Void>> receiveQuizCompletedEvent(
+      @RequestBody QuizCompletedEvent event) {
     achievementListenerService.processQuizCompleted(event);
-    return ResponseEntity.ok(ApiResponse.success("Quiz completed event received successfully", null));
+    return ResponseEntity.ok(
+        ApiResponse.success("Quiz completed event received successfully", null));
   }
 }

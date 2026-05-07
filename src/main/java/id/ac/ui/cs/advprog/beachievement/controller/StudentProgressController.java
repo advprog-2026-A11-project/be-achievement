@@ -20,9 +20,11 @@ public class StudentProgressController {
   }
 
   @GetMapping("/{userId}/missions")
-  public ResponseEntity<ApiResponse<List<UserDailyMission>>> getMissions(@PathVariable UUID userId) {
+  public ResponseEntity<ApiResponse<List<UserDailyMission>>> getMissions(
+      @PathVariable UUID userId) {
     List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
-    return ResponseEntity.ok(ApiResponse.success("Student missions retrieved successfully", missions));
+    return ResponseEntity.ok(
+        ApiResponse.success("Student missions retrieved successfully", missions));
   }
 
   @PutMapping("/{userId}/missions/{missionId}/progress")

@@ -55,9 +55,14 @@ public class UserAchievementController {
 
   @GetMapping
   @Operation(summary = "Get all achievements of a user")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved list of achievements")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
-  public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getAllAchievements(@PathVariable UUID userId) {
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200", description = "Successfully retrieved list of achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403", description = "Access denied")
+  })
+  public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getAllAchievements(
+      @PathVariable UUID userId) {
     validateUserAccess(userId);
 
     List<UserAchievement> achievements = userAchievementService.getUnlockedAchievements(userId);
@@ -65,14 +70,20 @@ public class UserAchievementController {
         .map(UserAchievementResponse::fromEntity)
         .collect(Collectors.toList());
 
-    return ResponseEntity.ok(ApiResponse.success("Successfully fetched achievements", responseList));
+    return ResponseEntity.ok(
+        ApiResponse.success("Successfully fetched achievements", responseList));
   }
 
   @GetMapping("/featured")
   @Operation(summary = "Get featured (showcased) achievements of a user")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved featured achievements")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
-  public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getFeaturedAchievements(@PathVariable UUID userId) {
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200", description = "Successfully retrieved featured achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403", description = "Access denied")
+  })
+  public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getFeaturedAchievements(
+      @PathVariable UUID userId) {
     // Note: Featured achievements might be public, but following strict rules to match requirements
     // if it needs to be public, we can remove validateUserAccess. 
     // The prompt says: "Compare JWT userId with {userId} path variable". So we keep it.
@@ -83,13 +94,18 @@ public class UserAchievementController {
         .map(UserAchievementResponse::fromEntity)
         .collect(Collectors.toList());
 
-    return ResponseEntity.ok(ApiResponse.success("Successfully fetched featured achievements", responseList));
+    return ResponseEntity.ok(
+        ApiResponse.success("Successfully fetched featured achievements", responseList));
   }
 
   @PutMapping("/{achievementId}/featured")
   @Operation(summary = "Toggle featured status of an achievement")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully toggled featured status")
-  @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+  @ApiResponses({
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200", description = "Successfully toggled featured status"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403", description = "Access denied")
+  })
   public ResponseEntity<ApiResponse<Void>> toggleFeaturedAchievement(
       @PathVariable UUID userId,
       @PathVariable Long achievementId,

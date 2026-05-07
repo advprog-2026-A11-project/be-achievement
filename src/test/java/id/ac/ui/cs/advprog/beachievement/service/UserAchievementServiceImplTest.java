@@ -66,7 +66,8 @@ public class UserAchievementServiceImplTest {
   @Test
   void testGetPublicAchievements() {
     userAchievement.setShowcased(true);
-    when(userAchievementRepository.findByUserIdAndIsShowcasedTrue(userId)).thenReturn(List.of(userAchievement));
+    when(userAchievementRepository.findByUserIdAndIsShowcasedTrue(userId))
+        .thenReturn(List.of(userAchievement));
 
     List<UserAchievement> results = userAchievementService.getPublicAchievements(userId);
 
@@ -76,7 +77,7 @@ public class UserAchievementServiceImplTest {
   }
 
   @Test
-  void testSetFeaturedAchievement_Success() {
+  void testSetFeaturedAchievementSuccess() {
     when(userAchievementRepository.findByUserIdAndAchievementId(userId, 1L))
         .thenReturn(Optional.of(userAchievement));
 
@@ -87,7 +88,7 @@ public class UserAchievementServiceImplTest {
   }
 
   @Test
-  void testSetFeaturedAchievement_NotFound() {
+  void testSetFeaturedAchievementNotFound() {
     when(userAchievementRepository.findByUserIdAndAchievementId(userId, 2L))
         .thenReturn(Optional.empty());
 
@@ -97,7 +98,7 @@ public class UserAchievementServiceImplTest {
   }
 
   @Test
-  void testCheckAndUnlockAchievements_UnlockNew() {
+  void testCheckAndUnlockAchievementsUnlockNew() {
     when(achievementRepository.findAll()).thenReturn(List.of(achievement));
     when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 1L)).thenReturn(false);
 
@@ -107,7 +108,7 @@ public class UserAchievementServiceImplTest {
   }
 
   @Test
-  void testCheckAndUnlockAchievements_AlreadyUnlocked() {
+  void testCheckAndUnlockAchievementsAlreadyUnlocked() {
     when(achievementRepository.findAll()).thenReturn(List.of(achievement));
     when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 1L)).thenReturn(true);
 
@@ -117,7 +118,7 @@ public class UserAchievementServiceImplTest {
   }
 
   @Test
-  void testCheckAndUnlockAchievements_MilestoneNotReached() {
+  void testCheckAndUnlockAchievementsMilestoneNotReached() {
     when(achievementRepository.findAll()).thenReturn(List.of(achievement));
 
     userAchievementService.checkAndUnlockAchievements(userId, 0);

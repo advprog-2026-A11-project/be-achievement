@@ -31,7 +31,8 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
-    mission.setActiveDate(request.getActiveDate() != null ? request.getActiveDate() : LocalDate.now());
+    mission.setActiveDate(
+        request.getActiveDate() != null ? request.getActiveDate() : LocalDate.now());
 
     DailyMission saved = dailyMissionService.create(mission);
     return new ResponseEntity<>(
@@ -42,7 +43,8 @@ public class DailyMissionController {
   @GetMapping
   public ResponseEntity<ApiResponse<List<DailyMission>>> getAllDailyMissions() {
     return ResponseEntity.ok(
-        ApiResponse.success("Daily missions retrieved successfully", dailyMissionService.findAll()));
+        ApiResponse.success("Daily missions retrieved successfully",
+            dailyMissionService.findAll()));
   }
 
   @PutMapping("/{id}")
@@ -58,7 +60,8 @@ public class DailyMissionController {
 
     DailyMission updated = dailyMissionService.update(id, mission);
     if (updated == null) {
-      return new ResponseEntity<>(ApiResponse.error("Daily mission not found"), HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(ApiResponse.error("Daily mission not found"),
+          HttpStatus.NOT_FOUND);
     }
     return ResponseEntity.ok(ApiResponse.success("Daily mission updated successfully", updated));
   }
