@@ -30,7 +30,8 @@ public class UserAchievementController {
   }
 
   /**
-   * Helper method to validate if the authenticated user matches the path variable.
+   * Helper method to validate if the authenticated user matches the path
+   * variable.
    * Extracts user identity from the SecurityContext populated by JwtAuthFilter.
    */
   private void validateUserAccess(UUID pathUserId) {
@@ -38,7 +39,7 @@ public class UserAchievementController {
     if (authentication == null || authentication.getPrincipal() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
     }
-    
+
     // In JwtAuthFilter, principal is set as the userId string
     String tokenUserIdStr = (String) authentication.getPrincipal();
     UUID tokenUserId;
@@ -56,10 +57,8 @@ public class UserAchievementController {
   @GetMapping
   @Operation(summary = "Get all achievements of a user")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200", description = "Successfully retrieved list of achievements"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved list of achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getAllAchievements(
       @PathVariable UUID userId) {
@@ -77,16 +76,11 @@ public class UserAchievementController {
   @GetMapping("/featured")
   @Operation(summary = "Get featured (showcased) achievements of a user")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200", description = "Successfully retrieved featured achievements"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved featured achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getFeaturedAchievements(
       @PathVariable UUID userId) {
-    // Note: Featured achievements might be public, but following strict rules to match requirements
-    // if it needs to be public, we can remove validateUserAccess. 
-    // The prompt says: "Compare JWT userId with {userId} path variable". So we keep it.
     validateUserAccess(userId);
 
     List<UserAchievement> achievements = userAchievementService.getPublicAchievements(userId);
@@ -101,23 +95,22 @@ public class UserAchievementController {
   @PutMapping("/{achievementId}/featured")
   @Operation(summary = "Toggle featured status of an achievement")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200", description = "Successfully toggled featured status"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully toggled featured status"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
   })
   public ResponseEntity<ApiResponse<Void>> toggleFeaturedAchievement(
       @PathVariable UUID userId,
       @PathVariable Long achievementId,
       @RequestBody ToggleFeaturedRequest request) {
-    
+
     validateUserAccess(userId);
 
     try {
       userAchievementService.setFeaturedAchievement(userId, achievementId, request.isFeatured());
       return ResponseEntity.ok(ApiResponse.success("Successfully updated featured status", null));
     } catch (Exception e) {
-      // In a more robust system, we would have specific exceptions like EntityNotFoundException
+      // In a more robust system, we would have specific exceptions like
+      // EntityNotFoundException
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Achievement not found for the user");
     }
   }
