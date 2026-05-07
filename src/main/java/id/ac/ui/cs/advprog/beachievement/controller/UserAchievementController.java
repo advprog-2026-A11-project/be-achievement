@@ -6,8 +6,8 @@ import id.ac.ui.cs.advprog.beachievement.dto.UserAchievementResponse;
 import id.ac.ui.cs.advprog.beachievement.model.UserAchievement;
 import id.ac.ui.cs.advprog.beachievement.service.UserAchievementService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,7 +15,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -29,18 +34,12 @@ public class UserAchievementController {
     this.userAchievementService = userAchievementService;
   }
 
-  /**
-   * Helper method to validate if the authenticated user matches the path
-   * variable.
-   * Extracts user identity from the SecurityContext populated by JwtAuthFilter.
-   */
   private void validateUserAccess(UUID pathUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || authentication.getPrincipal() == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
     }
 
-    // In JwtAuthFilter, principal is set as the userId string
     String tokenUserIdStr = (String) authentication.getPrincipal();
     UUID tokenUserId;
     try {
@@ -96,7 +95,8 @@ public class UserAchievementController {
   @Operation(summary = "Toggle featured status of an achievement")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully toggled featured status"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Achievement not found")
   })
   public ResponseEntity<ApiResponse<Void>> toggleFeaturedAchievement(
       @PathVariable UUID userId,
@@ -107,11 +107,11 @@ public class UserAchievementController {
 
     try {
       userAchievementService.setFeaturedAchievement(userId, achievementId, request.isFeatured());
-      return ResponseEntity.ok(ApiResponse.success("Successfully updated featured status", null));
+      return ResponseEntity.ok(
+          ApiResponse.success("Successfully updated featured status", null));
     } catch (Exception e) {
-      // In a more robust system, we would have specific exceptions like
-      // EntityNotFoundException
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Achievement not found for the user");
+      throw new ResponseStatusException(
+          HttpStatus.NOT_FOUND, "Achievement not found for the user");
     }
   }
 }
