@@ -61,8 +61,12 @@ public class UserAchievementController {
   @GetMapping
   @Operation(summary = "Get all achievements of a user")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved list of achievements"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Successfully retrieved list of achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403",
+          description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getAllAchievements(
       @PathVariable UUID userId) {
@@ -80,8 +84,12 @@ public class UserAchievementController {
   @GetMapping("/featured")
   @Operation(summary = "Get featured (showcased) achievements of a user")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved featured achievements"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Successfully retrieved featured achievements"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403",
+          description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getFeaturedAchievements(
       @PathVariable UUID userId) {
@@ -99,9 +107,15 @@ public class UserAchievementController {
   @PutMapping("/{achievementId}/featured")
   @Operation(summary = "Toggle featured status of an achievement")
   @ApiResponses({
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully toggled featured status"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied"),
-      @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Achievement not found")
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "200",
+          description = "Successfully toggled featured status"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "403",
+          description = "Access denied"),
+      @io.swagger.v3.oas.annotations.responses.ApiResponse(
+          responseCode = "404",
+          description = "Achievement not found")
   })
   public ResponseEntity<ApiResponse<Void>> toggleFeaturedAchievement(
       @PathVariable UUID userId,
