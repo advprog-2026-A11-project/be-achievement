@@ -30,6 +30,18 @@ public class AchievementServiceImpl implements AchievementService {
   }
 
   @Override
+  public Achievement update(Long id, Achievement achievement) {
+    return achievementRepository.findById(id).map(existing -> {
+      existing.setTitle(achievement.getTitle());
+      existing.setDescription(achievement.getDescription());
+      existing.setMilestone(achievement.getMilestone());
+      existing.setMilestoneType(achievement.getMilestoneType());
+      existing.setIconUrl(achievement.getIconUrl());
+      return achievementRepository.save(existing);
+    }).orElse(null);
+  }
+
+  @Override
   public void delete(Long id) {
     achievementRepository.deleteById(id);
   }
