@@ -35,17 +35,8 @@ public class UserAchievementController {
     this.userAchievementService = userAchievementService;
   }
 
-  /**
-   * Validates that the authenticated user matches the path variable userId.
-   * Uses authentication.getName() which works with both JwtAuthFilter (String
-   * principal)
-   * and @WithMockUser in tests (UserDetails where getName() returns the
-   * username).
-   */
   private void validateUserAccess(UUID pathUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    // AnonymousAuthenticationToken has isAuthenticated()=true but is not a real
-    // user
     if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
     }
