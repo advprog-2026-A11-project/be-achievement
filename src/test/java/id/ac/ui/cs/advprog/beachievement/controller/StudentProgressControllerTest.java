@@ -83,7 +83,7 @@ class StudentProgressControllerTest {
 
   @Test
   @WithMockUser(roles = "STUDENT")
-  void testUpdateProgress_badRequest_whenProgressKeyMissing() throws Exception {
+  void testUpdateProgressBadRequestWhenProgressKeyMissing() throws Exception {
     UUID userId = UUID.randomUUID();
     final Long missionId = 10L;
     Map<String, Integer> body = new HashMap<>();

@@ -64,7 +64,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
-  void getAllAchievements_success_whenOwnerRequests() throws Exception {
+  void getAllAchievementsSuccessWhenOwnerRequests() throws Exception {
     when(userAchievementService.getUnlockedAchievements(OWNER_ID))
         .thenReturn(List.of(buildUserAchievement()));
 
@@ -76,7 +76,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
-  void getAllAchievements_returnsEmptyList_whenUserHasNoAchievements() throws Exception {
+  void getAllAchievementsReturnsEmptyListWhenUserHasNoAchievements() throws Exception {
     when(userAchievementService.getUnlockedAchievements(OWNER_ID))
         .thenReturn(Collections.emptyList());
 
@@ -87,7 +87,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "22222222-2222-2222-2222-222222222222")
-  void getAllAchievements_forbidden_whenOtherUserRequests() throws Exception {
+  void getAllAchievementsForbiddenWhenOtherUserRequests() throws Exception {
     mockMvc.perform(get("/api/users/" + OWNER_ID + "/achievements"))
         .andExpect(status().isForbidden());
 
@@ -95,7 +95,7 @@ class UserAchievementControllerTest {
   }
 
   @Test
-  void getAllAchievements_unauthorized_whenNoAuthentication() throws Exception {
+  void getAllAchievementsUnauthorizedWhenNoAuthentication() throws Exception {
     mockMvc.perform(get("/api/users/" + OWNER_ID + "/achievements"))
         .andExpect(status().isUnauthorized());
 
@@ -104,7 +104,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
-  void getFeaturedAchievements_success_whenOwnerRequests() throws Exception {
+  void getFeaturedAchievementsSuccessWhenOwnerRequests() throws Exception {
     UserAchievement ua = buildUserAchievement();
     ua.setShowcased(true);
     when(userAchievementService.getPublicAchievements(OWNER_ID)).thenReturn(List.of(ua));
@@ -117,7 +117,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "22222222-2222-2222-2222-222222222222")
-  void getFeaturedAchievements_forbidden_whenOtherUserRequests() throws Exception {
+  void getFeaturedAchievementsForbiddenWhenOtherUserRequests() throws Exception {
     mockMvc.perform(get("/api/users/" + OWNER_ID + "/achievements/featured"))
         .andExpect(status().isForbidden());
 
@@ -126,7 +126,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
-  void toggleFeaturedAchievement_success_whenOwnerRequests() throws Exception {
+  void toggleFeaturedAchievementSuccessWhenOwnerRequests() throws Exception {
     ToggleFeaturedRequest request = new ToggleFeaturedRequest(true);
     doNothing().when(userAchievementService)
         .setFeaturedAchievement(eq(OWNER_ID), eq(5L), eq(true));
@@ -141,7 +141,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
-  void toggleFeaturedAchievement_notFound_throwsException() throws Exception {
+  void toggleFeaturedAchievementNotFoundThrowsException() throws Exception {
     ToggleFeaturedRequest request = new ToggleFeaturedRequest(true);
     doThrow(new RuntimeException("not found")).when(userAchievementService)
         .setFeaturedAchievement(eq(OWNER_ID), eq(999L), eq(true));
@@ -154,7 +154,7 @@ class UserAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "22222222-2222-2222-2222-222222222222")
-  void toggleFeaturedAchievement_forbidden_whenOtherUserRequests() throws Exception {
+  void toggleFeaturedAchievementForbiddenWhenOtherUserRequests() throws Exception {
     ToggleFeaturedRequest request = new ToggleFeaturedRequest(false);
 
     mockMvc.perform(put("/api/users/" + OWNER_ID + "/achievements/5/featured")

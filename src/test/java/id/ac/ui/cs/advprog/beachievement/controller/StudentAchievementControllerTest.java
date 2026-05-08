@@ -52,7 +52,7 @@ class StudentAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-  void getMyAchievements_success_whenAuthenticated() throws Exception {
+  void getMyAchievementsSuccessWhenAuthenticated() throws Exception {
     when(userAchievementService.getUnlockedAchievements(USER_ID))
         .thenReturn(List.of(buildAchievement(false)));
 
@@ -64,7 +64,7 @@ class StudentAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-  void getMyAchievements_returnsEmptyList_whenNoAchievements() throws Exception {
+  void getMyAchievementsReturnsEmptyListWhenNoAchievements() throws Exception {
     when(userAchievementService.getUnlockedAchievements(USER_ID))
         .thenReturn(Collections.emptyList());
 
@@ -74,7 +74,7 @@ class StudentAchievementControllerTest {
   }
 
   @Test
-  void getMyAchievements_unauthorized_whenNoAuthentication() throws Exception {
+  void getMyAchievementsUnauthorizedWhenNoAuthentication() throws Exception {
     mockMvc.perform(get("/api/achievements/me"))
         .andExpect(status().isUnauthorized());
 
@@ -82,7 +82,7 @@ class StudentAchievementControllerTest {
   }
 
   @Test
-  void getPublicAchievements_success_noAuthRequired() throws Exception {
+  void getPublicAchievementsSuccessNoAuthRequired() throws Exception {
     when(userAchievementService.getPublicAchievements(USER_ID))
         .thenReturn(List.of(buildAchievement(true)));
 
@@ -93,7 +93,7 @@ class StudentAchievementControllerTest {
   }
 
   @Test
-  void getPublicAchievements_returnsEmpty_whenNoneShowcased() throws Exception {
+  void getPublicAchievementsReturnsEmptyWhenNoneShowcased() throws Exception {
     when(userAchievementService.getPublicAchievements(USER_ID))
         .thenReturn(Collections.emptyList());
 
@@ -104,7 +104,7 @@ class StudentAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-  void setFeaturedAchievement_success_whenAuthenticated() throws Exception {
+  void setFeaturedAchievementSuccessWhenAuthenticated() throws Exception {
     mockMvc.perform(put("/api/achievements/featured/1")
         .param("showcased", "true"))
         .andExpect(status().isOk())
@@ -116,7 +116,7 @@ class StudentAchievementControllerTest {
 
   @Test
   @WithMockUser(username = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
-  void setFeaturedAchievement_showcase_false() throws Exception {
+  void setFeaturedAchievementShowcaseFalse() throws Exception {
     mockMvc.perform(put("/api/achievements/featured/2")
         .param("showcased", "false"))
         .andExpect(status().isOk())
@@ -126,7 +126,7 @@ class StudentAchievementControllerTest {
   }
 
   @Test
-  void setFeaturedAchievement_unauthorized_whenNoAuthentication() throws Exception {
+  void setFeaturedAchievementUnauthorizedWhenNoAuthentication() throws Exception {
     mockMvc.perform(put("/api/achievements/featured/1")
         .param("showcased", "true"))
         .andExpect(status().isUnauthorized());
