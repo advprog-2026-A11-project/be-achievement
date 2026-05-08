@@ -17,6 +17,11 @@ java {
     }
 }
 
+// Enable dependency locking for predictable, reproducible builds
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -28,10 +33,10 @@ repositories {
 }
 
 sonarqube {
-        properties {
-                property("sonar.projectKey", "advprog-2026-A11-project_be-achievement")
-                property("sonar.organization", "adpro-a-kelompok-11")
-        }
+    properties {
+        property("sonar.projectKey", "advprog-2026-A11-project_be-achievement")
+        property("sonar.organization", "adpro-a-kelompok-11")
+    }
 }
 
 dependencies {
@@ -45,9 +50,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation ("com.h2database:h2")
+    testImplementation("com.h2database:h2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.boot:spring-boot-starter-validation")
