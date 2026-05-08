@@ -33,6 +33,10 @@ public class StudentProgressController {
       @PathVariable Long missionId,
       @RequestBody Map<String, Integer> body) {
     Integer progress = body.get("progress");
+    if (progress == null) {
+      return ResponseEntity.badRequest()
+          .body(ApiResponse.error("Request body must contain a valid 'progress' integer"));
+    }
     UserDailyMission updated = studentProgressService.updateProgress(userId, missionId, progress);
     return ResponseEntity.ok(ApiResponse.success("Mission progress updated successfully", updated));
   }
