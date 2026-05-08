@@ -38,8 +38,6 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
     UUID userId = event.getUserId();
     String eventId = event.getEventId();
 
-    // === IDEMPOTENCY CHECK ===
-    // Cek apakah event ini sudah pernah diproses sebelumnya
     UserQuizCount quizCount = userQuizCountRepository.findByUserId(userId)
         .orElseGet(() -> {
           UserQuizCount newCount = new UserQuizCount();

@@ -162,6 +162,7 @@ class UserAchievementControllerTest {
         .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isForbidden());
 
-    verify(userAchievementService, never()).setFeaturedAchievement(any(), any(), any(Boolean.class));
+    verify(userAchievementService, never())
+        .setFeaturedAchievement(any(), any(), any(Boolean.class));
   }
 }
