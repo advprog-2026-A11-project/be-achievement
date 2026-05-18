@@ -78,7 +78,7 @@ public class DailyMissionServiceImpl implements DailyMissionService {
   }
 
   private List<DailyMission> seedDefaultDailyMissions() {
-    List<DailyMission> defaults = new ArrayList<>();
+    final List<DailyMission> defaults = new ArrayList<>();
 
     DailyMission dm1 = new DailyMission();
     dm1.setTitle("Membaca Berita Harian");
