@@ -55,4 +55,9 @@ public class StudentProgressServiceImpl implements StudentProgressService {
     }
     return userDailyMissionRepository.save(udm);
   }
+
+  @Override
+  public Integer calculateTotalRewardPoints(UUID userId) {
+    return userDailyMissionRepository.calculateTotalRewardPoints(userId);
+  }
 }
