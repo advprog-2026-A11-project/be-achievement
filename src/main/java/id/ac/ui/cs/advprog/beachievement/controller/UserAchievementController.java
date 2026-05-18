@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,21 +35,15 @@ public class UserAchievementController {
     this.userAchievementService = userAchievementService;
   }
 
-  /**
-   * Helper method to validate if the authenticated user matches the path
-   * variable.
-   * Extracts user identity from the SecurityContext populated by JwtAuthFilter.
-   */
   private void validateUserAccess(UUID pathUserId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    if (authentication == null || authentication.getPrincipal() == null) {
+    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
     }
 
-    String tokenUserIdStr = (String) authentication.getPrincipal();
     UUID tokenUserId;
     try {
-      tokenUserId = UUID.fromString(tokenUserIdStr);
+      tokenUserId = UUID.fromString(authentication.getName());
     } catch (IllegalArgumentException e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid token user ID format");
     }
@@ -62,11 +57,11 @@ public class UserAchievementController {
   @Operation(summary = "Get all achievements of a user")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200",
-          description = "Successfully retrieved list of achievements"),
+        responseCode = "200", 
+        description = "Successfully retrieved list of achievements"),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403",
-          description = "Access denied")
+        responseCode = "403", 
+        description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getAllAchievements(
       @PathVariable UUID userId) {
@@ -85,11 +80,11 @@ public class UserAchievementController {
   @Operation(summary = "Get featured (showcased) achievements of a user")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200",
-          description = "Successfully retrieved featured achievements"),
+        responseCode = "200", 
+        description = "Successfully retrieved featured achievements"),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403",
-          description = "Access denied")
+        responseCode = "403", 
+        description = "Access denied")
   })
   public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getFeaturedAchievements(
       @PathVariable UUID userId) {
@@ -108,14 +103,14 @@ public class UserAchievementController {
   @Operation(summary = "Toggle featured status of an achievement")
   @ApiResponses({
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "200",
-          description = "Successfully toggled featured status"),
+        responseCode = "200", 
+        description = "Successfully toggled featured status"),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "403",
-          description = "Access denied"),
+        responseCode = "403", 
+        description = "Access denied"),
       @io.swagger.v3.oas.annotations.responses.ApiResponse(
-          responseCode = "404",
-          description = "Achievement not found")
+        responseCode = "404", 
+        description = "Achievement not found")
   })
   public ResponseEntity<ApiResponse<Void>> toggleFeaturedAchievement(
       @PathVariable UUID userId,

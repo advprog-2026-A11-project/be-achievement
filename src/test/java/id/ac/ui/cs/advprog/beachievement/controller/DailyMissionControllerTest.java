@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.model.DailyMissionRequest;
 import id.ac.ui.cs.advprog.beachievement.service.DailyMissionService;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -49,11 +50,26 @@ class DailyMissionControllerTest {
     when(dailyMissionService.create(any(DailyMission.class))).thenReturn(saved);
 
     mockMvc.perform(post("/api/admin/daily-missions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data.title").value("Misi 1"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
+  void testGetAllMissions() throws Exception {
+    DailyMission mission = new DailyMission();
+    mission.setId(1L);
+    mission.setTitle("Daily Quest");
+
+    when(dailyMissionService.findAll()).thenReturn(Arrays.asList(mission));
+
+    mockMvc.perform(get("/api/admin/daily-missions"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.length()").value(1));
   }
 
   @Test
@@ -69,6 +85,30 @@ class DailyMissionControllerTest {
 
   @Test
   @WithMockUser(roles = "ADMIN")
+  void testUpdateMissionSuccess() throws Exception {
+    DailyMissionRequest request = new DailyMissionRequest();
+    request.setTitle("Updated Mission");
+    request.setDescription("Updated description");
+    request.setTargetMilestone(3);
+
+    DailyMission updated = new DailyMission();
+    updated.setId(1L);
+    updated.setTitle("Updated Mission");
+    updated.setDescription("Updated description");
+    updated.setTargetMilestone(3);
+
+    when(dailyMissionService.update(eq(1L), any(DailyMission.class))).thenReturn(updated);
+
+    mockMvc.perform(put("/api/admin/daily-missions/1")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.title").value("Updated Mission"));
+  }
+
+  @Test
+  @WithMockUser(roles = "ADMIN")
   void testUpdateMissionNotFound() throws Exception {
     when(dailyMissionService.update(eq(999L), any(DailyMission.class))).thenReturn(null);
 
@@ -78,8 +118,8 @@ class DailyMissionControllerTest {
     request.setTargetMilestone(5);
 
     mockMvc.perform(put("/api/admin/daily-missions/999")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)))
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.success").value(false))
         .andExpect(jsonPath("$.message").value("Daily mission not found"));

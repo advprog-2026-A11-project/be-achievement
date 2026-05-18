@@ -80,4 +80,18 @@ class StudentProgressControllerTest {
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data.currentProgress").value(5));
   }
+
+  @Test
+  @WithMockUser(roles = "STUDENT")
+  void testUpdateProgressBadRequestWhenProgressKeyMissing() throws Exception {
+    UUID userId = UUID.randomUUID();
+    final Long missionId = 10L;
+    Map<String, Integer> body = new HashMap<>();
+
+    mockMvc.perform(put("/api/student-progress/" + userId + "/missions/" + missionId + "/progress")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(body)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.success").value(false));
+  }
 }
