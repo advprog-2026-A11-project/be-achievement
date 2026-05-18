@@ -14,6 +14,7 @@ public interface UserDailyMissionRepository extends JpaRepository<UserDailyMissi
 
   Optional<UserDailyMission> findByUserIdAndDailyMissionId(UUID userId, Long missionId);
 
-  @Query("SELECT COALESCE(SUM(dm.rewardPoints), 0) FROM UserDailyMission udm JOIN udm.dailyMission dm WHERE udm.userId = :userId AND udm.isCompleted = true")
+  @Query("SELECT COALESCE(SUM(dm.rewardPoints), 0) FROM UserDailyMission udm "
+      + "JOIN udm.dailyMission dm WHERE udm.userId = :userId AND udm.isCompleted = true")
   Integer calculateTotalRewardPoints(@Param("userId") UUID userId);
 }
