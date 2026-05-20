@@ -33,7 +33,7 @@ public class SecurityConfig {
             .requestMatchers("/api/student-progress/**").authenticated()
             .requestMatchers("/api/achievements/me").authenticated()
             .requestMatchers("/api/achievements/*/public").permitAll()
-            .requestMatchers("/api/events/**").authenticated()
+            .requestMatchers("/api/events/**").permitAll()
             .anyRequest().permitAll())
         .addFilterBefore(jwtAuthFilter,
             UsernamePasswordAuthenticationFilter.class);

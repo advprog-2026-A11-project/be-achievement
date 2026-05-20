@@ -8,4 +8,6 @@ public interface StudentProgressService {
   List<UserDailyMission> getStudentMissions(UUID userId);
 
   UserDailyMission updateProgress(UUID userId, Long missionId, Integer progress);
+
+  Integer calculateTotalRewardPoints(UUID userId);
 }

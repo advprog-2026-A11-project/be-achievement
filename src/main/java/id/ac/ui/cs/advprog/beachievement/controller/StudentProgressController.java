@@ -40,4 +40,13 @@ public class StudentProgressController {
     UserDailyMission updated = studentProgressService.updateProgress(userId, missionId, progress);
     return ResponseEntity.ok(ApiResponse.success("Mission progress updated successfully", updated));
   }
+
+  @GetMapping("/{userId}/score")
+  public ResponseEntity<ApiResponse<Map<String, Integer>>> getStudentScore(
+      @PathVariable UUID userId) {
+    Integer totalScore = studentProgressService.calculateTotalRewardPoints(userId);
+    return ResponseEntity.ok(
+        ApiResponse.success("Student total reward points retrieved successfully", 
+        Map.of("score", totalScore)));
+  }
 }

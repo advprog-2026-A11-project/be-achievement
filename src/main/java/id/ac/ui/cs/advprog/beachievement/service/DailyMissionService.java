@@ -11,4 +11,6 @@ public interface DailyMissionService {
   DailyMission update(Long id, DailyMission mission);
 
   void delete(Long id);
+
+  void rotateDailyMissions();
 }

@@ -34,7 +34,15 @@ public class DailyMission {
 
   private String missionType;
 
-  private boolean isActive = true;
+  private Boolean isActive = true;
+
+  public boolean isActive() {
+    return this.isActive != null && this.isActive;
+  }
+
+  public void setActive(Boolean active) {
+    this.isActive = active;
+  }
 
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate activeDate;
