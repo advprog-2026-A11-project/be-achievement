@@ -101,6 +101,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      logger.warn("Token validation was interrupted: " + e.getMessage());
     } catch (Exception e) {
       logger.warn("Failed to validate token with auth service: " + e.getMessage());
     }

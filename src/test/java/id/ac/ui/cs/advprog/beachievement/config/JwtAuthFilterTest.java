@@ -30,6 +30,7 @@ class JwtAuthFilterTest {
   @AfterEach
   void tearDown() {
     SecurityContextHolder.clearContext();
+    Thread.interrupted();
   }
 
   @Test
@@ -149,6 +150,7 @@ class JwtAuthFilterTest {
     filter.doFilter(request, response, filterChain);
 
     assertNull(SecurityContextHolder.getContext().getAuthentication());
+    assertTrue(Thread.currentThread().isInterrupted());
     verify(filterChain).doFilter(request, response);
   }
 
