@@ -26,10 +26,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   @Value("${auth.service.url}")
   private String authServiceUrl;
 
-  private final HttpClient httpClient = HttpClient.newBuilder()
-      .connectTimeout(Duration.ofSeconds(3))
-      .build();
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final HttpClient httpClient;
+  private final ObjectMapper objectMapper;
+
+  public JwtAuthFilter() {
+    this(HttpClient.newBuilder()
+        .connectTimeout(Duration.ofSeconds(3))
+        .build(), new ObjectMapper(), null);
+  }
+
+  JwtAuthFilter(HttpClient httpClient, ObjectMapper objectMapper, String authServiceUrl) {
+    this.httpClient = httpClient;
+    this.objectMapper = objectMapper;
+    this.authServiceUrl = authServiceUrl;
+  }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
