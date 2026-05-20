@@ -3,12 +3,13 @@ package id.ac.ui.cs.advprog.beachievement.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.model.QuizCompletedEvent;
 import id.ac.ui.cs.advprog.beachievement.model.UserDailyMission;
+import id.ac.ui.cs.advprog.beachievement.model.UserQuizCount;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.UserDailyMissionRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserQuizCountRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,12 @@ class AchievementListenerServiceImplTests {
 
   @Mock
   private UserDailyMissionRepository userDailyMissionRepository;
+
+  @Mock
+  private UserQuizCountRepository userQuizCountRepository;
+
+  @Mock
+  private UserAchievementService userAchievementService;
 
   @InjectMocks
   private AchievementListenerServiceImpl achievementListenerService;
@@ -57,6 +64,10 @@ class AchievementListenerServiceImplTests {
   void testProcessQuizCompletedWithNoActiveMissions() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Collections.emptyList());
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     achievementListenerService.processQuizCompleted(event);
 
@@ -69,6 +80,10 @@ class AchievementListenerServiceImplTests {
         .thenReturn(Arrays.asList(mission));
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
         .thenReturn(Optional.empty());
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     achievementListenerService.processQuizCompleted(event);
 
@@ -94,6 +109,10 @@ class AchievementListenerServiceImplTests {
         .thenReturn(Arrays.asList(mission));
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
         .thenReturn(Optional.of(existing));
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     achievementListenerService.processQuizCompleted(event);
 
@@ -113,6 +132,10 @@ class AchievementListenerServiceImplTests {
         .thenReturn(Arrays.asList(mission));
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
         .thenReturn(Optional.of(existing));
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     achievementListenerService.processQuizCompleted(event);
 
@@ -133,9 +156,33 @@ class AchievementListenerServiceImplTests {
         .thenReturn(Arrays.asList(mission));
     when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
         .thenReturn(Optional.of(completed));
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     achievementListenerService.processQuizCompleted(event);
 
+    verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testProcessQuizCompletedSkipsDuplicateEvent() {
+    String eventId = "event-1";
+    event.setEventId(eventId);
+    UserQuizCount quizCount = new UserQuizCount();
+    quizCount.setUserId(userId);
+    quizCount.setQuizCount(3);
+    quizCount.setLastProcessedEventId(eventId);
+
+    when(userQuizCountRepository.findByUserId(userId)).thenReturn(Optional.of(quizCount));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(3, quizCount.getQuizCount());
+    verify(userQuizCountRepository, never()).save(any(UserQuizCount.class));
+    verify(userAchievementService, never()).checkAndUnlockAchievements(any(UUID.class), anyInt());
+    verify(dailyMissionRepository, never()).findByActiveDate(any(LocalDate.class));
     verify(userDailyMissionRepository, never()).save(any());
   }
 }

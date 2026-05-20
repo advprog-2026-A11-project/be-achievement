@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class QuizCompletedEvent {
+  private String eventId;
   private UUID userId;
   private Integer score;
   private Double accuracy;

@@ -7,11 +7,15 @@ import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
 import java.util.Arrays;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -90,5 +94,50 @@ class DailyMissionServiceImplTests {
     dailyMissionService.delete(1L);
 
     verify(dailyMissionRepository, times(1)).deleteById(1L);
+  }
+
+  @Test
+  void testRotateDailyMissionsWithEmptyDatabase() {
+    when(dailyMissionRepository.findAll()).thenReturn(Collections.emptyList());
+    when(dailyMissionRepository.save(any(DailyMission.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    dailyMissionService.rotateDailyMissions();
+
+    verify(dailyMissionRepository, atLeast(4)).save(any(DailyMission.class));
+  }
+
+  @Test
+  void testRotateDailyMissionsWithExistingMissions() {
+    LocalDate yesterday = LocalDate.now().minusDays(1);
+    DailyMission oldMission = new DailyMission();
+    oldMission.setId(2L);
+    oldMission.setTitle("Misi Kemarin");
+    oldMission.setActiveDate(yesterday);
+    oldMission.setActive(true);
+
+    List<DailyMission> existing = new ArrayList<>();
+    existing.add(oldMission);
+
+    List<DailyMission> savedSnapshots = new ArrayList<>();
+    when(dailyMissionRepository.findAll()).thenReturn(existing);
+    when(dailyMissionRepository.save(any(DailyMission.class)))
+        .thenAnswer(invocation -> {
+          DailyMission arg = invocation.getArgument(0);
+          DailyMission copy = new DailyMission();
+          copy.setId(arg.getId());
+          copy.setActive(arg.isActive());
+          copy.setActiveDate(arg.getActiveDate());
+          savedSnapshots.add(copy);
+          return arg;
+        });
+
+    dailyMissionService.rotateDailyMissions();
+
+    verify(dailyMissionRepository, atLeastOnce()).save(any(DailyMission.class));
+
+    boolean hasDeactivated = savedSnapshots.stream()
+        .anyMatch(m -> m.getId().equals(2L) && !m.isActive());
+    assertTrue(hasDeactivated, "The yesterday's daily mission should be deactivated first");
   }
 }
