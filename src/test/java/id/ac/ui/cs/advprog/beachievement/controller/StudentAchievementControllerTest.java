@@ -82,6 +82,15 @@ class StudentAchievementControllerTest {
   }
 
   @Test
+  @WithMockUser(username = "invalid-uuid")
+  void getMyAchievementsReturnsBadRequestWhenPrincipalIsNotUuid() throws Exception {
+    mockMvc.perform(get("/api/achievements/me"))
+        .andExpect(status().isBadRequest());
+
+    verify(userAchievementService, never()).getUnlockedAchievements(USER_ID);
+  }
+
+  @Test
   void getPublicAchievementsSuccessNoAuthRequired() throws Exception {
     when(userAchievementService.getPublicAchievements(USER_ID))
         .thenReturn(List.of(buildAchievement(true)));
