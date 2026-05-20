@@ -125,7 +125,7 @@ class JwtAuthFilterTest {
   }
 
   @Test
-  void continuesFilterChainWhenHttpClientThrowsIOException() throws Exception {
+  void continuesFilterChainWhenHttpClientThrowsIoException() throws Exception {
     JwtAuthFilter filter = buildFilter();
     MockHttpServletRequest request = bearerRequest();
     when(httpClient.send(any(HttpRequest.class),
