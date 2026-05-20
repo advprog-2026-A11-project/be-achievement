@@ -126,4 +126,14 @@ class StudentProgressServiceImplTests {
 
     verify(userDailyMissionRepository, never()).save(any());
   }
+
+  @Test
+  void testCalculateTotalRewardPointsDelegatesToRepository() {
+    when(userDailyMissionRepository.calculateTotalRewardPoints(userId)).thenReturn(150);
+
+    Integer totalRewardPoints = studentProgressService.calculateTotalRewardPoints(userId);
+
+    assertEquals(150, totalRewardPoints);
+    verify(userDailyMissionRepository).calculateTotalRewardPoints(userId);
+  }
 }

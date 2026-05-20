@@ -165,4 +165,24 @@ class AchievementListenerServiceImplTests {
 
     verify(userDailyMissionRepository, never()).save(any());
   }
+
+  @Test
+  void testProcessQuizCompletedSkipsDuplicateEvent() {
+    String eventId = "event-1";
+    event.setEventId(eventId);
+    UserQuizCount quizCount = new UserQuizCount();
+    quizCount.setUserId(userId);
+    quizCount.setQuizCount(3);
+    quizCount.setLastProcessedEventId(eventId);
+
+    when(userQuizCountRepository.findByUserId(userId)).thenReturn(Optional.of(quizCount));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(3, quizCount.getQuizCount());
+    verify(userQuizCountRepository, never()).save(any(UserQuizCount.class));
+    verify(userAchievementService, never()).checkAndUnlockAchievements(any(UUID.class), anyInt());
+    verify(dailyMissionRepository, never()).findByActiveDate(any(LocalDate.class));
+    verify(userDailyMissionRepository, never()).save(any());
+  }
 }

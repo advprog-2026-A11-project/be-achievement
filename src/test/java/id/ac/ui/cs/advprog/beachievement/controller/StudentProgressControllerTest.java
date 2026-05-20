@@ -94,4 +94,17 @@ class StudentProgressControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.success").value(false));
   }
+
+  @Test
+  @WithMockUser(roles = "STUDENT")
+  void testGetStudentScore() throws Exception {
+    UUID userId = UUID.randomUUID();
+
+    when(studentProgressService.calculateTotalRewardPoints(userId)).thenReturn(75);
+
+    mockMvc.perform(get("/api/student-progress/" + userId + "/score"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.score").value(75));
+  }
 }
