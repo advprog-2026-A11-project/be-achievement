@@ -6,8 +6,10 @@ import id.ac.ui.cs.advprog.beachievement.service.StudentProgressService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/student-progress")
@@ -39,6 +41,18 @@ public class StudentProgressController {
     }
     UserDailyMission updated = studentProgressService.updateProgress(userId, missionId, progress);
     return ResponseEntity.ok(ApiResponse.success("Mission progress updated successfully", updated));
+  }
+
+  @PostMapping("/{userId}/missions/{missionId}/claim")
+  public ResponseEntity<ApiResponse<UserDailyMission>> claimReward(
+      @PathVariable UUID userId,
+      @PathVariable Long missionId) {
+    try {
+      UserDailyMission updated = studentProgressService.claimReward(userId, missionId);
+      return ResponseEntity.ok(ApiResponse.success("Mission reward claimed successfully", updated));
+    } catch (IllegalStateException e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
   }
 
   @GetMapping("/{userId}/score")

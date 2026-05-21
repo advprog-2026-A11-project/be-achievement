@@ -31,6 +31,7 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
+    mission.setMissionType(request.getMissionType());
     mission.setActiveDate(
         request.getActiveDate() != null ? request.getActiveDate() : LocalDate.now());
 
@@ -56,6 +57,7 @@ public class DailyMissionController {
     mission.setDescription(request.getDescription());
     mission.setTargetMilestone(request.getTargetMilestone());
     mission.setRewardPoints(request.getRewardPoints());
+    mission.setMissionType(request.getMissionType());
     mission.setActiveDate(request.getActiveDate());
 
     DailyMission updated = dailyMissionService.update(id, mission);

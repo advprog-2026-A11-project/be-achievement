@@ -38,3 +38,5 @@ out/
 
 ### Custom Env ###
 .env
+.env.local
+*.log

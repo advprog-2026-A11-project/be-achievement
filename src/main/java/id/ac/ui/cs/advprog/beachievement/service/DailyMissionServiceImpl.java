@@ -2,20 +2,24 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserDailyMissionRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DailyMissionServiceImpl implements DailyMissionService {
   private final DailyMissionRepository dailyMissionRepository;
+  private final UserDailyMissionRepository userDailyMissionRepository;
 
-  public DailyMissionServiceImpl(DailyMissionRepository dailyMissionRepository) {
+  public DailyMissionServiceImpl(
+      DailyMissionRepository dailyMissionRepository,
+      UserDailyMissionRepository userDailyMissionRepository) {
     this.dailyMissionRepository = dailyMissionRepository;
+    this.userDailyMissionRepository = userDailyMissionRepository;
   }
 
   @Override
@@ -43,7 +47,9 @@ public class DailyMissionServiceImpl implements DailyMissionService {
   }
 
   @Override
+  @Transactional
   public void delete(Long id) {
+    userDailyMissionRepository.deleteByDailyMissionId(id);
     dailyMissionRepository.deleteById(id);
   }
 

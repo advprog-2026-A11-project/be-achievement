@@ -38,6 +38,9 @@ class AchievementListenerServiceImplTests {
   @Mock
   private UserAchievementService userAchievementService;
 
+  @Mock
+  private UserDailyMissionProgressService userDailyMissionProgressService;
+
   @InjectMocks
   private AchievementListenerServiceImpl achievementListenerService;
 
@@ -78,8 +81,15 @@ class AchievementListenerServiceImplTests {
   void testProcessQuizCompletedCreatesNewMapping() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.empty());
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenAnswer(invocation -> {
+          UserDailyMission created = new UserDailyMission();
+          created.setUserId(userId);
+          created.setDailyMission(mission);
+          created.setCurrentProgress(0);
+          created.setCompleted(false);
+          return created;
+        });
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -107,8 +117,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(existing));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -118,6 +128,59 @@ class AchievementListenerServiceImplTests {
 
     verify(userDailyMissionRepository).save(existing);
     assertEquals(3, existing.getCurrentProgress());
+    verify(userAchievementService).checkAndUnlockAchievementsByType(userId, "QUIZ_ACCURACY");
+  }
+
+  @Test
+  void testProcessQuizCompletedSkipsAccuracyMissionWhenQuizIsNotPerfect() {
+    event.setAccuracy(80.0);
+    mission.setMissionType("QUIZ_ACCURACY");
+
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(0, existing.getCurrentProgress());
+    verify(userDailyMissionRepository, never()).save(existing);
+    verify(userAchievementService, never())
+        .checkAndUnlockAchievementsByType(any(UUID.class), anyString());
+  }
+
+  @Test
+  void testProcessQuizCompletedIncrementsBlankTypeMission() {
+    mission.setMissionType("");
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(1, existing.getCurrentProgress());
+    verify(userDailyMissionRepository).save(existing);
   }
 
   @Test
@@ -130,8 +193,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(existing));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -154,8 +217,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(completed));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(completed);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))

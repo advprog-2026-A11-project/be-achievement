@@ -22,4 +22,5 @@ public class UserDailyMission {
 
   private Integer currentProgress = 0;
   private boolean isCompleted = false;
+  private boolean rewardClaimed = false;
 }

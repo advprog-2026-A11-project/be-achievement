@@ -15,21 +15,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AchievementListenerServiceImpl implements AchievementListenerService {
+  private static final String QUIZ_ACCURACY = "QUIZ_ACCURACY";
 
   private final DailyMissionRepository dailyMissionRepository;
   private final UserDailyMissionRepository userDailyMissionRepository;
   private final UserQuizCountRepository userQuizCountRepository;
   private final UserAchievementService userAchievementService;
+  private final UserDailyMissionProgressService userDailyMissionProgressService;
 
   public AchievementListenerServiceImpl(
       DailyMissionRepository dailyMissionRepository,
       UserDailyMissionRepository userDailyMissionRepository,
       UserQuizCountRepository userQuizCountRepository,
-      UserAchievementService userAchievementService) {
+      UserAchievementService userAchievementService,
+      UserDailyMissionProgressService userDailyMissionProgressService) {
     this.dailyMissionRepository = dailyMissionRepository;
     this.userDailyMissionRepository = userDailyMissionRepository;
     this.userQuizCountRepository = userQuizCountRepository;
     this.userAchievementService = userAchievementService;
+    this.userDailyMissionProgressService = userDailyMissionProgressService;
   }
 
   @Override
@@ -54,23 +58,18 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
     quizCount.setLastProcessedEventId(eventId);
     userQuizCountRepository.save(quizCount);
     userAchievementService.checkAndUnlockAchievements(userId, quizCount.getQuizCount());
+    if (isPerfectAccuracyEvent(event)) {
+      userAchievementService.checkAndUnlockAchievementsByType(userId, QUIZ_ACCURACY);
+    }
 
     List<DailyMission> todayMissions = dailyMissionRepository
         .findByActiveDate(LocalDate.now());
 
     for (DailyMission mission : todayMissions) {
-      UserDailyMission udm = userDailyMissionRepository
-          .findByUserIdAndDailyMissionId(userId, mission.getId())
-          .orElseGet(() -> {
-            UserDailyMission newUdm = new UserDailyMission();
-            newUdm.setUserId(userId);
-            newUdm.setDailyMission(mission);
-            newUdm.setCurrentProgress(0);
-            newUdm.setCompleted(false);
-            return newUdm;
-          });
+      UserDailyMission udm = userDailyMissionProgressService.getOrCreateUserDailyMission(userId,
+          mission);
 
-      if (!udm.isCompleted()) {
+      if (!udm.isCompleted() && matchesMissionRule(mission, event)) {
         udm.setCurrentProgress(udm.getCurrentProgress() + 1);
         if (udm.getCurrentProgress() >= mission.getTargetMilestone()) {
           udm.setCompleted(true);
@@ -78,5 +77,17 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
         userDailyMissionRepository.save(udm);
       }
     }
+  }
+
+  private boolean matchesMissionRule(DailyMission mission, QuizCompletedEvent event) {
+    String missionType = mission.getMissionType();
+    if (missionType == null || missionType.isBlank() || "QUIZ_COUNT".equals(missionType)) {
+      return true;
+    }
+    return QUIZ_ACCURACY.equals(missionType) && isPerfectAccuracyEvent(event);
+  }
+
+  private boolean isPerfectAccuracyEvent(QuizCompletedEvent event) {
+    return event.getAccuracy() != null && event.getAccuracy() >= 100.0;
   }
 }

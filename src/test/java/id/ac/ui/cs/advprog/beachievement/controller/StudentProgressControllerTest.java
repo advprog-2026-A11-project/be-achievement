@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -106,5 +107,37 @@ class StudentProgressControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data.score").value(75));
+  }
+
+  @Test
+  @WithMockUser(roles = "STUDENT")
+  void testClaimReward() throws Exception {
+    UUID userId = UUID.randomUUID();
+    final Long missionId = 10L;
+    UserDailyMission claimedMission = new UserDailyMission();
+    claimedMission.setId(1L);
+    claimedMission.setUserId(userId);
+    claimedMission.setCompleted(true);
+    claimedMission.setRewardClaimed(true);
+
+    when(studentProgressService.claimReward(userId, missionId)).thenReturn(claimedMission);
+
+    mockMvc.perform(post("/api/student-progress/" + userId + "/missions/" + missionId + "/claim"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data.rewardClaimed").value(true));
+  }
+
+  @Test
+  @WithMockUser(roles = "STUDENT")
+  void testClaimRewardBadRequestWhenMissionIncomplete() throws Exception {
+    UUID userId = UUID.randomUUID();
+    final Long missionId = 10L;
+
+    when(studentProgressService.claimReward(userId, missionId))
+        .thenThrow(new IllegalStateException("Mission must be completed before claiming reward"));
+
+    mockMvc.perform(post("/api/student-progress/" + userId + "/missions/" + missionId + "/claim"))
+        .andExpect(status().isBadRequest());
   }
 }

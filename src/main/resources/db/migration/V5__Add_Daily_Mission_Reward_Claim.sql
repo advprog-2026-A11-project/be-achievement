@@ -1,0 +1,2 @@
+ALTER TABLE user_daily_mission
+    ADD COLUMN IF NOT EXISTS reward_claimed BOOLEAN NOT NULL DEFAULT FALSE;

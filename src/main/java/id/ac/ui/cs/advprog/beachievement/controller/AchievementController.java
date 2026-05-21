@@ -29,6 +29,7 @@ public class AchievementController {
     achievement.setTitle(request.getTitle());
     achievement.setDescription(request.getDescription());
     achievement.setMilestone(request.getMilestone());
+    achievement.setMilestoneType(request.getMilestoneType());
 
     Achievement saved = achievementService.create(achievement);
     return new ResponseEntity<>(
@@ -56,6 +57,7 @@ public class AchievementController {
     achievement.setTitle(request.getTitle());
     achievement.setDescription(request.getDescription());
     achievement.setMilestone(request.getMilestone());
+    achievement.setMilestoneType(request.getMilestoneType());
 
     Achievement updated = achievementService.update(id, achievement);
     if (updated == null) {

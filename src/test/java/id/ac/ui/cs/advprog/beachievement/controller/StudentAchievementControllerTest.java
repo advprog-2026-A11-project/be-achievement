@@ -112,6 +112,30 @@ class StudentAchievementControllerTest {
   }
 
   @Test
+  void getCompletedAchievementsSuccessNoAuthRequired() throws Exception {
+    when(userAchievementService.getUnlockedAchievements(USER_ID))
+        .thenReturn(List.of(buildAchievement(false)));
+
+    mockMvc.perform(get("/api/achievements/" + USER_ID + "/completed"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.message")
+            .value("Completed achievements retrieved successfully"))
+        .andExpect(jsonPath("$.data.length()").value(1))
+        .andExpect(jsonPath("$.data[0].achievementId").value(1));
+  }
+
+  @Test
+  void getCompletedAchievementsReturnsEmptyWhenUserHasNoUnlockedAchievements() throws Exception {
+    when(userAchievementService.getUnlockedAchievements(USER_ID))
+        .thenReturn(Collections.emptyList());
+
+    mockMvc.perform(get("/api/achievements/" + USER_ID + "/completed"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.length()").value(0));
+  }
+
+  @Test
   @WithMockUser(username = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
   void setFeaturedAchievementSuccessWhenAuthenticated() throws Exception {
     mockMvc.perform(put("/api/achievements/featured/1")

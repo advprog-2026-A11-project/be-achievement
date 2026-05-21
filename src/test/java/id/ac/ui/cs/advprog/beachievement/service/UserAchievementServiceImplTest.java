@@ -8,8 +8,6 @@ import id.ac.ui.cs.advprog.beachievement.model.Achievement;
 import id.ac.ui.cs.advprog.beachievement.model.UserAchievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.UserAchievementRepository;
-import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -124,6 +122,72 @@ public class UserAchievementServiceImplTest {
     userAchievementService.checkAndUnlockAchievements(userId, 0);
 
     verify(userAchievementRepository, never()).existsByUserIdAndAchievementId(any(), any());
+    verify(userAchievementRepository, never()).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsUnlocksBlankQuizCountType() {
+    achievement.setMilestoneType("");
+    when(achievementRepository.findAll()).thenReturn(List.of(achievement));
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 1L)).thenReturn(false);
+
+    userAchievementService.checkAndUnlockAchievements(userId, 1);
+
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsSkipsNonQuizCountType() {
+    achievement.setMilestoneType("QUIZ_ACCURACY");
+    when(achievementRepository.findAll()).thenReturn(List.of(achievement));
+
+    userAchievementService.checkAndUnlockAchievements(userId, 1);
+
+    verify(userAchievementRepository, never()).existsByUserIdAndAchievementId(any(), any());
+    verify(userAchievementRepository, never()).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsByTypeReturnsForBlankType() {
+    userAchievementService.checkAndUnlockAchievementsByType(userId, " ");
+
+    verify(achievementRepository, never()).findAll();
+    verify(userAchievementRepository, never()).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsByTypeUnlocksMatchingSingleMilestone() {
+    achievement.setMilestoneType("QUIZ_ACCURACY");
+    achievement.setMilestone(1);
+    when(achievementRepository.findAll()).thenReturn(List.of(achievement));
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 1L)).thenReturn(false);
+
+    userAchievementService.checkAndUnlockAchievementsByType(userId, "QUIZ_ACCURACY");
+
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsByTypeSkipsHigherMilestone() {
+    achievement.setMilestoneType("QUIZ_ACCURACY");
+    achievement.setMilestone(2);
+    when(achievementRepository.findAll()).thenReturn(List.of(achievement));
+
+    userAchievementService.checkAndUnlockAchievementsByType(userId, "QUIZ_ACCURACY");
+
+    verify(userAchievementRepository, never()).existsByUserIdAndAchievementId(any(), any());
+    verify(userAchievementRepository, never()).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testCheckAndUnlockAchievementsByTypeSkipsAlreadyUnlocked() {
+    achievement.setMilestoneType("QUIZ_ACCURACY");
+    achievement.setMilestone(1);
+    when(achievementRepository.findAll()).thenReturn(List.of(achievement));
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 1L)).thenReturn(true);
+
+    userAchievementService.checkAndUnlockAchievementsByType(userId, "QUIZ_ACCURACY");
+
     verify(userAchievementRepository, never()).save(any(UserAchievement.class));
   }
 }
