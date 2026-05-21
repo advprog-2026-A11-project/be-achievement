@@ -53,6 +53,22 @@ public class StudentProgressServiceImpl implements StudentProgressService {
   }
 
   @Override
+  public UserDailyMission claimReward(UUID userId, Long missionId) {
+    UserDailyMission udm = userDailyMissionProgressService.findUserDailyMission(userId, missionId)
+        .orElseThrow(() -> new RuntimeException("Mission not found for user"));
+
+    if (!udm.isCompleted()) {
+      throw new IllegalStateException("Mission must be completed before claiming reward");
+    }
+
+    if (!udm.isRewardClaimed()) {
+      udm.setRewardClaimed(true);
+      return userDailyMissionRepository.save(udm);
+    }
+    return udm;
+  }
+
+  @Override
   public Integer calculateTotalRewardPoints(UUID userId) {
     return userDailyMissionRepository.calculateTotalRewardPoints(userId);
   }

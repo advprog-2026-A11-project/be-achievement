@@ -140,4 +140,53 @@ class StudentProgressServiceImplTests {
     assertEquals(150, totalRewardPoints);
     verify(userDailyMissionRepository).calculateTotalRewardPoints(userId);
   }
+
+  @Test
+  void testClaimRewardMarksCompletedMissionAsClaimed() {
+    userDailyMission.setCompleted(true);
+    userDailyMission.setRewardClaimed(false);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionRepository.save(userDailyMission)).thenReturn(userDailyMission);
+
+    UserDailyMission result = studentProgressService.claimReward(userId, 1L);
+
+    assertTrue(result.isRewardClaimed());
+    verify(userDailyMissionRepository).save(userDailyMission);
+  }
+
+  @Test
+  void testClaimRewardIsIdempotentWhenAlreadyClaimed() {
+    userDailyMission.setCompleted(true);
+    userDailyMission.setRewardClaimed(true);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+
+    UserDailyMission result = studentProgressService.claimReward(userId, 1L);
+
+    assertTrue(result.isRewardClaimed());
+    verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testClaimRewardFailsWhenMissionNotCompleted() {
+    userDailyMission.setCompleted(false);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+
+    assertThrows(IllegalStateException.class,
+        () -> studentProgressService.claimReward(userId, 1L));
+
+    verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testClaimRewardFailsWhenMissionNotFound() {
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 99L))
+        .thenReturn(Optional.empty());
+
+    assertThrows(RuntimeException.class, () -> studentProgressService.claimReward(userId, 99L));
+
+    verify(userDailyMissionRepository, never()).save(any());
+  }
 }

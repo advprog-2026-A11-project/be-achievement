@@ -26,7 +26,18 @@ public interface UserDailyMissionRepository extends JpaRepository<UserDailyMissi
   @Query("DELETE FROM UserDailyMission udm WHERE udm.dailyMission.id = :missionId")
   void deleteByDailyMissionId(@Param("missionId") Long missionId);
 
+  @Modifying
+  @Query(value = """
+      INSERT INTO user_daily_mission (
+          user_id, mission_id, current_progress, is_completed, reward_claimed
+      )
+      VALUES (:userId, :missionId, 0, FALSE, FALSE)
+      ON CONFLICT (user_id, mission_id) DO NOTHING
+      """, nativeQuery = true)
+  void insertIfMissing(@Param("userId") UUID userId, @Param("missionId") Long missionId);
+
   @Query("SELECT COALESCE(SUM(dm.rewardPoints), 0) FROM UserDailyMission udm "
-      + "JOIN udm.dailyMission dm WHERE udm.userId = :userId AND udm.isCompleted = true")
+      + "JOIN udm.dailyMission dm WHERE udm.userId = :userId "
+      + "AND udm.isCompleted = true AND udm.rewardClaimed = true")
   Integer calculateTotalRewardPoints(@Param("userId") UUID userId);
 }

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,10 +16,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class UserDailyMissionProgressServiceTests {
@@ -76,41 +73,31 @@ class UserDailyMissionProgressServiceTests {
   @Test
   void getOrCreateUserDailyMissionCreatesNewProgressWhenMissing() {
     when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 7L))
-        .thenReturn(List.of());
-    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
-
-    UserDailyMission result = service.getOrCreateUserDailyMission(userId, mission);
-
-    ArgumentCaptor<UserDailyMission> captor = ArgumentCaptor.forClass(UserDailyMission.class);
-    verify(userDailyMissionRepository).saveAndFlush(captor.capture());
-
-    assertSame(result, captor.getValue());
-    assertEquals(userId, result.getUserId());
-    assertEquals(mission, result.getDailyMission());
-    assertEquals(0, result.getCurrentProgress());
-  }
-
-  @Test
-  void getOrCreateUserDailyMissionRecoversFromDuplicateInsertRace() {
-    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 7L))
         .thenReturn(List.of(), List.of(userDailyMission));
-    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
-        .thenThrow(new DataIntegrityViolationException("duplicate"));
 
     UserDailyMission result = service.getOrCreateUserDailyMission(userId, mission);
 
+    verify(userDailyMissionRepository).insertIfMissing(userId, 7L);
     assertSame(userDailyMission, result);
   }
 
   @Test
-  void getOrCreateUserDailyMissionRethrowsWhenDuplicateRecoveryCannotFindProgress() {
+  void getOrCreateUserDailyMissionRecoversWhenConcurrentInsertAlreadyCreatedProgress() {
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 7L))
+        .thenReturn(List.of(), List.of(userDailyMission));
+
+    UserDailyMission result = service.getOrCreateUserDailyMission(userId, mission);
+
+    verify(userDailyMissionRepository).insertIfMissing(userId, 7L);
+    assertSame(userDailyMission, result);
+  }
+
+  @Test
+  void getOrCreateUserDailyMissionThrowsWhenInsertCannotBeReloaded() {
     when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 7L))
         .thenReturn(List.of(), List.of());
-    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
-        .thenThrow(new DataIntegrityViolationException("duplicate"));
 
-    assertThrows(DataIntegrityViolationException.class,
+    assertThrows(IllegalStateException.class,
         () -> service.getOrCreateUserDailyMission(userId, mission));
   }
 }
