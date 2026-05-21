@@ -36,7 +36,8 @@ public class StudentProgressServiceImpl implements StudentProgressService {
       userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission);
     }
 
-    return userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(userId, LocalDate.now());
+    return userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(
+        userId, LocalDate.now());
   }
 
   @Override
