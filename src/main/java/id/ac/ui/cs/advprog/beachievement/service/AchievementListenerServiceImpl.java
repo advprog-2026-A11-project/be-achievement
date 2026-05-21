@@ -10,7 +10,6 @@ import id.ac.ui.cs.advprog.beachievement.repository.UserQuizCountRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +21,19 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
   private final UserDailyMissionRepository userDailyMissionRepository;
   private final UserQuizCountRepository userQuizCountRepository;
   private final UserAchievementService userAchievementService;
+  private final UserDailyMissionProgressService userDailyMissionProgressService;
 
   public AchievementListenerServiceImpl(
       DailyMissionRepository dailyMissionRepository,
       UserDailyMissionRepository userDailyMissionRepository,
       UserQuizCountRepository userQuizCountRepository,
-      UserAchievementService userAchievementService) {
+      UserAchievementService userAchievementService,
+      UserDailyMissionProgressService userDailyMissionProgressService) {
     this.dailyMissionRepository = dailyMissionRepository;
     this.userDailyMissionRepository = userDailyMissionRepository;
     this.userQuizCountRepository = userQuizCountRepository;
     this.userAchievementService = userAchievementService;
+    this.userDailyMissionProgressService = userDailyMissionProgressService;
   }
 
   @Override
@@ -64,7 +66,8 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
         .findByActiveDate(LocalDate.now());
 
     for (DailyMission mission : todayMissions) {
-      UserDailyMission udm = getOrCreateUserDailyMission(userId, mission);
+      UserDailyMission udm = userDailyMissionProgressService.getOrCreateUserDailyMission(userId,
+          mission);
 
       if (!udm.isCompleted() && matchesMissionRule(mission, event)) {
         udm.setCurrentProgress(udm.getCurrentProgress() + 1);
@@ -86,32 +89,5 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
 
   private boolean isPerfectAccuracyEvent(QuizCompletedEvent event) {
     return event.getAccuracy() != null && event.getAccuracy() >= 100.0;
-  }
-
-  private java.util.Optional<UserDailyMission> findUserDailyMission(UUID userId, Long missionId) {
-    return userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
-            missionId)
-        .stream()
-        .findFirst();
-  }
-
-  private UserDailyMission getOrCreateUserDailyMission(UUID userId, DailyMission mission) {
-    return findUserDailyMission(userId, mission.getId())
-        .orElseGet(() -> createUserDailyMission(userId, mission));
-  }
-
-  private UserDailyMission createUserDailyMission(UUID userId, DailyMission mission) {
-    UserDailyMission udm = new UserDailyMission();
-    udm.setUserId(userId);
-    udm.setDailyMission(mission);
-    udm.setCurrentProgress(0);
-    udm.setCompleted(false);
-
-    try {
-      return userDailyMissionRepository.saveAndFlush(udm);
-    } catch (DataIntegrityViolationException e) {
-      return findUserDailyMission(userId, mission.getId())
-          .orElseThrow(() -> e);
-    }
   }
 }

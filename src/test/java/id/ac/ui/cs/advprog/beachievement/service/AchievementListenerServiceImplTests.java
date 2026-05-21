@@ -38,6 +38,9 @@ class AchievementListenerServiceImplTests {
   @Mock
   private UserAchievementService userAchievementService;
 
+  @Mock
+  private UserDailyMissionProgressService userDailyMissionProgressService;
+
   @InjectMocks
   private AchievementListenerServiceImpl achievementListenerService;
 
@@ -78,10 +81,15 @@ class AchievementListenerServiceImplTests {
   void testProcessQuizCompletedCreatesNewMapping() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
-        mission.getId())).thenReturn(Collections.emptyList());
-    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
-        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenAnswer(invocation -> {
+          UserDailyMission created = new UserDailyMission();
+          created.setUserId(userId);
+          created.setDailyMission(mission);
+          created.setCurrentProgress(0);
+          created.setCompleted(false);
+          return created;
+        });
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -109,8 +117,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
-        mission.getId())).thenReturn(Arrays.asList(existing));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -132,8 +140,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
-        mission.getId())).thenReturn(Arrays.asList(existing));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -156,8 +164,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
-        mission.getId())).thenReturn(Arrays.asList(completed));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(completed);
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
