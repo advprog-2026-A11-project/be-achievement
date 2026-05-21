@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
@@ -11,7 +12,6 @@ import id.ac.ui.cs.advprog.beachievement.repository.UserDailyMissionRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,10 +58,11 @@ class StudentProgressServiceImplTests {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 1L))
+        .thenReturn(List.of(userDailyMission));
 
-    when(userDailyMissionRepository.findByUserId(userId))
+    when(userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(eq(userId),
+        any(LocalDate.class)))
         .thenReturn(Arrays.asList(userDailyMission));
 
     List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
@@ -75,24 +76,26 @@ class StudentProgressServiceImplTests {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.empty());
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 1L))
+        .thenReturn(List.of());
 
-    when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
+    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
+        .thenReturn(userDailyMission);
 
-    when(userDailyMissionRepository.findByUserId(userId))
+    when(userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(eq(userId),
+        any(LocalDate.class)))
         .thenReturn(Arrays.asList(userDailyMission));
 
     List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
 
     assertEquals(1, missions.size());
-    verify(userDailyMissionRepository, times(1)).save(any(UserDailyMission.class));
+    verify(userDailyMissionRepository, times(1)).saveAndFlush(any(UserDailyMission.class));
   }
 
   @Test
   void testUpdateProgressValidNotCompleted() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 1L))
+        .thenReturn(List.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
 
     UserDailyMission result = studentProgressService.updateProgress(userId, 1L, 5);
@@ -104,8 +107,8 @@ class StudentProgressServiceImplTests {
 
   @Test
   void testUpdateProgressValidCompleted() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 1L))
+        .thenReturn(List.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
 
     UserDailyMission result = studentProgressService.updateProgress(userId, 1L, 10);
@@ -117,8 +120,8 @@ class StudentProgressServiceImplTests {
 
   @Test
   void testUpdateProgressNotFound() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 99L))
-        .thenReturn(Optional.empty());
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId, 99L))
+        .thenReturn(List.of());
 
     assertThrows(RuntimeException.class, () -> {
       studentProgressService.updateProgress(userId, 99L, 5);

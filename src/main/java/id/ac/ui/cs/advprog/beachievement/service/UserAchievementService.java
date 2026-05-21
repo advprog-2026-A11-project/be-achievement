@@ -11,5 +11,7 @@ public interface UserAchievementService {
 
   void checkAndUnlockAchievements(UUID userId, int quizCount);
 
+  void checkAndUnlockAchievementsByType(UUID userId, String milestoneType);
+
   void setFeaturedAchievement(UUID userId, Long achievementId, boolean showcased);
 }

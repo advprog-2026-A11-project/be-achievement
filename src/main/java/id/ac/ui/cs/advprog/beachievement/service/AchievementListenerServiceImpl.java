@@ -10,11 +10,13 @@ import id.ac.ui.cs.advprog.beachievement.repository.UserQuizCountRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AchievementListenerServiceImpl implements AchievementListenerService {
+  private static final String QUIZ_ACCURACY = "QUIZ_ACCURACY";
 
   private final DailyMissionRepository dailyMissionRepository;
   private final UserDailyMissionRepository userDailyMissionRepository;
@@ -54,29 +56,62 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
     quizCount.setLastProcessedEventId(eventId);
     userQuizCountRepository.save(quizCount);
     userAchievementService.checkAndUnlockAchievements(userId, quizCount.getQuizCount());
+    if (isPerfectAccuracyEvent(event)) {
+      userAchievementService.checkAndUnlockAchievementsByType(userId, QUIZ_ACCURACY);
+    }
 
     List<DailyMission> todayMissions = dailyMissionRepository
         .findByActiveDate(LocalDate.now());
 
     for (DailyMission mission : todayMissions) {
-      UserDailyMission udm = userDailyMissionRepository
-          .findByUserIdAndDailyMissionId(userId, mission.getId())
-          .orElseGet(() -> {
-            UserDailyMission newUdm = new UserDailyMission();
-            newUdm.setUserId(userId);
-            newUdm.setDailyMission(mission);
-            newUdm.setCurrentProgress(0);
-            newUdm.setCompleted(false);
-            return newUdm;
-          });
+      UserDailyMission udm = getOrCreateUserDailyMission(userId, mission);
 
-      if (!udm.isCompleted()) {
+      if (!udm.isCompleted() && matchesMissionRule(mission, event)) {
         udm.setCurrentProgress(udm.getCurrentProgress() + 1);
         if (udm.getCurrentProgress() >= mission.getTargetMilestone()) {
           udm.setCompleted(true);
         }
         userDailyMissionRepository.save(udm);
       }
+    }
+  }
+
+  private boolean matchesMissionRule(DailyMission mission, QuizCompletedEvent event) {
+    String missionType = mission.getMissionType();
+    if (missionType == null || missionType.isBlank() || "QUIZ_COUNT".equals(missionType)) {
+      return true;
+    }
+    return QUIZ_ACCURACY.equals(missionType) && isPerfectAccuracyEvent(event);
+  }
+
+  private boolean isPerfectAccuracyEvent(QuizCompletedEvent event) {
+    return event.getAccuracy() != null && event.getAccuracy() >= 100.0;
+  }
+
+  private java.util.Optional<UserDailyMission> findUserDailyMission(UUID userId, Long missionId) {
+    return userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
+            missionId)
+        .stream()
+        .findFirst();
+  }
+
+  private UserDailyMission getOrCreateUserDailyMission(UUID userId, DailyMission mission) {
+    return findUserDailyMission(userId, mission.getId())
+        .orElseGet(() -> createUserDailyMission(userId, mission));
+  }
+
+  private UserDailyMission createUserDailyMission(UUID userId, DailyMission mission) {
+    UserDailyMission udm = new UserDailyMission();
+    udm.setUserId(userId);
+    udm.setDailyMission(mission);
+    udm.setCurrentProgress(0);
+    udm.setCompleted(false);
+
+    try {
+      return userDailyMissionRepository.saveAndFlush(udm);
+    } catch (DataIntegrityViolationException e) {
+      return findUserDailyMission(userId, mission.getId())
+          .orElseThrow(() -> e);
     }
   }
 }

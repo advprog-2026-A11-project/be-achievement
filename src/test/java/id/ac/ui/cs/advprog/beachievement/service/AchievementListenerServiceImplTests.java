@@ -78,8 +78,10 @@ class AchievementListenerServiceImplTests {
   void testProcessQuizCompletedCreatesNewMapping() {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.empty());
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
+        mission.getId())).thenReturn(Collections.emptyList());
+    when(userDailyMissionRepository.saveAndFlush(any(UserDailyMission.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -107,8 +109,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(existing));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
+        mission.getId())).thenReturn(Arrays.asList(existing));
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -130,8 +132,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(existing));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
+        mission.getId())).thenReturn(Arrays.asList(existing));
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
@@ -154,8 +156,8 @@ class AchievementListenerServiceImplTests {
 
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(mission));
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, mission.getId()))
-        .thenReturn(Optional.of(completed));
+    when(userDailyMissionRepository.findAllByUserIdAndDailyMissionIdOrderByIdAsc(userId,
+        mission.getId())).thenReturn(Arrays.asList(completed));
     when(userQuizCountRepository.findByUserId(any(UUID.class)))
         .thenReturn(Optional.empty());
     when(userQuizCountRepository.save(any(UserQuizCount.class)))
