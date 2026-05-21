@@ -35,7 +35,7 @@ public interface UserDailyMissionRepository extends JpaRepository<UserDailyMissi
       )
       VALUES (:userId, :missionId, 0, FALSE, FALSE)
       ON CONFLICT (user_id, mission_id) DO NOTHING
-    """, nativeQuery = true)
+      """, nativeQuery = true)
   void insertIfMissing(@Param("userId") UUID userId, @Param("missionId") Long missionId);
 
   @Query("SELECT COALESCE(SUM(dm.rewardPoints), 0) FROM UserDailyMission udm "
