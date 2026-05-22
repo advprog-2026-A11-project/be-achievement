@@ -5,15 +5,15 @@ import id.ac.ui.cs.advprog.beachievement.model.UserAchievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.UserAchievementRepository;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserAchievementServiceImpl implements UserAchievementService {
-  private static final String QUIZ_COUNT = "QUIZ_COUNT";
-
   private final UserAchievementRepository userAchievementRepository;
   private final AchievementRepository achievementRepository;
 
@@ -37,11 +37,24 @@ public class UserAchievementServiceImpl implements UserAchievementService {
   @Override
   @Transactional
   public void checkAndUnlockAchievements(UUID userId, int quizCount) {
-    List<Achievement> allAchievements = achievementRepository.findAll();
+    List<Achievement> eligibleAchievements = achievementRepository
+        .findEligibleQuizCountAchievements(quizCount);
 
-    for (Achievement achievement : allAchievements) {
-      if (isQuizCountAchievement(achievement) && quizCount >= achievement.getMilestone()) {
-        unlockAchievementIfNeeded(userId, achievement);
+    unlockMissingAchievements(userId, eligibleAchievements);
+  }
+
+  private void unlockMissingAchievements(UUID userId, List<Achievement> eligibleAchievements) {
+    if (eligibleAchievements.isEmpty()) {
+      return;
+    }
+
+    Set<Long> unlockedAchievementIds = new HashSet<>(
+        userAchievementRepository.findAchievementIdsByUserId(userId));
+
+    for (Achievement achievement : eligibleAchievements) {
+      if (!unlockedAchievementIds.contains(achievement.getId())) {
+        unlockAchievement(userId, achievement);
+        unlockedAchievementIds.add(achievement.getId());
       }
     }
   }
@@ -53,10 +66,9 @@ public class UserAchievementServiceImpl implements UserAchievementService {
       return;
     }
 
-    achievementRepository.findAll().stream()
-        .filter(achievement -> milestoneType.equals(achievement.getMilestoneType()))
-        .filter(achievement -> achievement.getMilestone() <= 1)
-        .forEach(achievement -> unlockAchievementIfNeeded(userId, achievement));
+    List<Achievement> eligibleAchievements = achievementRepository
+        .findByMilestoneTypeAndMilestoneLessThanEqual(milestoneType, 1);
+    unlockMissingAchievements(userId, eligibleAchievements);
   }
 
   @Override
@@ -69,22 +81,12 @@ public class UserAchievementServiceImpl implements UserAchievementService {
         });
   }
 
-  private boolean isQuizCountAchievement(Achievement achievement) {
-    String milestoneType = achievement.getMilestoneType();
-    return milestoneType == null || milestoneType.isBlank() || QUIZ_COUNT.equals(milestoneType);
-  }
-
-  private void unlockAchievementIfNeeded(UUID userId, Achievement achievement) {
-    boolean alreadyUnlocked = userAchievementRepository
-        .existsByUserIdAndAchievementId(userId, achievement.getId());
-
-    if (!alreadyUnlocked) {
-      UserAchievement ua = new UserAchievement();
-      ua.setUserId(userId);
-      ua.setAchievement(achievement);
-      ua.setUnlockedAt(LocalDateTime.now());
-      ua.setShowcased(false);
-      userAchievementRepository.save(ua);
-    }
+  private void unlockAchievement(UUID userId, Achievement achievement) {
+    UserAchievement ua = new UserAchievement();
+    ua.setUserId(userId);
+    ua.setAchievement(achievement);
+    ua.setUnlockedAt(LocalDateTime.now());
+    ua.setShowcased(false);
+    userAchievementRepository.save(ua);
   }
 }
