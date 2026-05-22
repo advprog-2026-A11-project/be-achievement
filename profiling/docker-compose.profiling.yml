@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  achievement-profiling-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: achievement
+      POSTGRES_PASSWORD: achievement
+      POSTGRES_DB: achievement_profile
+    ports:
+      - "55434:5432"
+    volumes:
+      - achievement_profiling_pgdata:/var/lib/postgresql/data
+
+  achievement-profiling-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - achievement-profiling-db
+    ports:
+      - "18082:8082"
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://achievement-profiling-db:5432/achievement_profile
+      SPRING_DATASOURCE_USERNAME: achievement
+      SPRING_DATASOURCE_PASSWORD: achievement
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+
+volumes:
+  achievement_profiling_pgdata:
