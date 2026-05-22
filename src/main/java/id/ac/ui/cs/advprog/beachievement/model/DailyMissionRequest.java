@@ -23,6 +23,8 @@ public class DailyMissionRequest {
 
   private Integer rewardPoints;
 
+  private String missionType;
+
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate activeDate;
 }

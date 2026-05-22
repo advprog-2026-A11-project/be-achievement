@@ -9,5 +9,7 @@ public interface StudentProgressService {
 
   UserDailyMission updateProgress(UUID userId, Long missionId, Integer progress);
 
+  UserDailyMission claimReward(UUID userId, Long missionId);
+
   Integer calculateTotalRewardPoints(UUID userId);
 }

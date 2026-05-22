@@ -1,10 +1,12 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
 import id.ac.ui.cs.advprog.beachievement.dto.ApiResponse;
+import id.ac.ui.cs.advprog.beachievement.dto.UserAchievementResponse;
 import id.ac.ui.cs.advprog.beachievement.model.UserAchievement;
 import id.ac.ui.cs.advprog.beachievement.service.UserAchievementService;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -54,6 +56,19 @@ public class StudentAchievementController {
     List<UserAchievement> achievements = userAchievementService.getPublicAchievements(userId);
     return ResponseEntity.ok(
         ApiResponse.success("Public achievements retrieved successfully", achievements));
+  }
+
+  @GetMapping("/{userId}/completed")
+  public ResponseEntity<ApiResponse<List<UserAchievementResponse>>> getCompletedAchievements(
+      @PathVariable UUID userId) {
+    List<UserAchievementResponse> achievements = userAchievementService
+        .getUnlockedAchievements(userId)
+        .stream()
+        .map(UserAchievementResponse::fromEntity)
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(
+        ApiResponse.success("Completed achievements retrieved successfully", achievements));
   }
 
   @PutMapping("/featured/{achievementId}")

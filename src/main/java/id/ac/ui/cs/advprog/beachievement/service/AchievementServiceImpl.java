@@ -2,16 +2,22 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import id.ac.ui.cs.advprog.beachievement.model.Achievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserAchievementRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AchievementServiceImpl implements AchievementService {
 
   private final AchievementRepository achievementRepository;
+  private final UserAchievementRepository userAchievementRepository;
 
-  public AchievementServiceImpl(AchievementRepository achievementRepository) {
+  public AchievementServiceImpl(
+      AchievementRepository achievementRepository,
+      UserAchievementRepository userAchievementRepository) {
     this.achievementRepository = achievementRepository;
+    this.userAchievementRepository = userAchievementRepository;
   }
 
   @Override
@@ -42,7 +48,9 @@ public class AchievementServiceImpl implements AchievementService {
   }
 
   @Override
+  @Transactional
   public void delete(Long id) {
+    userAchievementRepository.deleteByAchievementId(id);
     achievementRepository.deleteById(id);
   }
 }

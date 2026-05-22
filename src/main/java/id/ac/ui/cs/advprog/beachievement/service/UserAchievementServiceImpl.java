@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserAchievementServiceImpl implements UserAchievementService {
+  private static final String QUIZ_COUNT = "QUIZ_COUNT";
 
   private final UserAchievementRepository userAchievementRepository;
   private final AchievementRepository achievementRepository;
@@ -39,20 +40,23 @@ public class UserAchievementServiceImpl implements UserAchievementService {
     List<Achievement> allAchievements = achievementRepository.findAll();
 
     for (Achievement achievement : allAchievements) {
-      if (quizCount >= achievement.getMilestone()) {
-        boolean alreadyUnlocked = userAchievementRepository
-            .existsByUserIdAndAchievementId(userId, achievement.getId());
-
-        if (!alreadyUnlocked) {
-          UserAchievement ua = new UserAchievement();
-          ua.setUserId(userId);
-          ua.setAchievement(achievement);
-          ua.setUnlockedAt(LocalDateTime.now());
-          ua.setShowcased(false);
-          userAchievementRepository.save(ua);
-        }
+      if (isQuizCountAchievement(achievement) && quizCount >= achievement.getMilestone()) {
+        unlockAchievementIfNeeded(userId, achievement);
       }
     }
+  }
+
+  @Override
+  @Transactional
+  public void checkAndUnlockAchievementsByType(UUID userId, String milestoneType) {
+    if (milestoneType == null || milestoneType.isBlank()) {
+      return;
+    }
+
+    achievementRepository.findAll().stream()
+        .filter(achievement -> milestoneType.equals(achievement.getMilestoneType()))
+        .filter(achievement -> achievement.getMilestone() <= 1)
+        .forEach(achievement -> unlockAchievementIfNeeded(userId, achievement));
   }
 
   @Override
@@ -63,5 +67,24 @@ public class UserAchievementServiceImpl implements UserAchievementService {
           ua.setShowcased(showcased);
           userAchievementRepository.save(ua);
         });
+  }
+
+  private boolean isQuizCountAchievement(Achievement achievement) {
+    String milestoneType = achievement.getMilestoneType();
+    return milestoneType == null || milestoneType.isBlank() || QUIZ_COUNT.equals(milestoneType);
+  }
+
+  private void unlockAchievementIfNeeded(UUID userId, Achievement achievement) {
+    boolean alreadyUnlocked = userAchievementRepository
+        .existsByUserIdAndAchievementId(userId, achievement.getId());
+
+    if (!alreadyUnlocked) {
+      UserAchievement ua = new UserAchievement();
+      ua.setUserId(userId);
+      ua.setAchievement(achievement);
+      ua.setUnlockedAt(LocalDateTime.now());
+      ua.setShowcased(false);
+      userAchievementRepository.save(ua);
+    }
   }
 }

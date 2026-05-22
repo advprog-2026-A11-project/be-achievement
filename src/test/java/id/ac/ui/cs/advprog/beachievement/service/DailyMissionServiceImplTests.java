@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserDailyMissionRepository;
 import java.util.Arrays;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ class DailyMissionServiceImplTests {
 
   @Mock
   private DailyMissionRepository dailyMissionRepository;
+
+  @Mock
+  private UserDailyMissionRepository userDailyMissionRepository;
 
   @InjectMocks
   private DailyMissionServiceImpl dailyMissionService;
@@ -89,10 +93,12 @@ class DailyMissionServiceImplTests {
 
   @Test
   void testDeleteMission() {
+    doNothing().when(userDailyMissionRepository).deleteByDailyMissionId(1L);
     doNothing().when(dailyMissionRepository).deleteById(1L);
 
     dailyMissionService.delete(1L);
 
+    verify(userDailyMissionRepository, times(1)).deleteByDailyMissionId(1L);
     verify(dailyMissionRepository, times(1)).deleteById(1L);
   }
 

@@ -8,45 +8,41 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentProgressServiceImpl implements StudentProgressService {
 
   private final UserDailyMissionRepository userDailyMissionRepository;
   private final DailyMissionRepository dailyMissionRepository;
+  private final UserDailyMissionProgressService userDailyMissionProgressService;
 
   public StudentProgressServiceImpl(
       UserDailyMissionRepository userDailyMissionRepository,
-      DailyMissionRepository dailyMissionRepository) {
+      DailyMissionRepository dailyMissionRepository,
+      UserDailyMissionProgressService userDailyMissionProgressService) {
     this.userDailyMissionRepository = userDailyMissionRepository;
     this.dailyMissionRepository = dailyMissionRepository;
+    this.userDailyMissionProgressService = userDailyMissionProgressService;
   }
 
   @Override
+  @Transactional
   public List<UserDailyMission> getStudentMissions(UUID userId) {
     List<DailyMission> todayMissions = dailyMissionRepository
         .findByActiveDate(LocalDate.now());
 
     for (DailyMission mission : todayMissions) {
-      userDailyMissionRepository
-          .findByUserIdAndDailyMissionId(userId, mission.getId())
-          .orElseGet(() -> {
-            UserDailyMission udm = new UserDailyMission();
-            udm.setUserId(userId);
-            udm.setDailyMission(mission);
-            udm.setCurrentProgress(0);
-            udm.setCompleted(false);
-            return userDailyMissionRepository.save(udm);
-          });
+      userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission);
     }
 
-    return userDailyMissionRepository.findByUserId(userId);
+    return userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(
+        userId, LocalDate.now());
   }
 
   @Override
   public UserDailyMission updateProgress(UUID userId, Long missionId, Integer progress) {
-    UserDailyMission udm = userDailyMissionRepository
-        .findByUserIdAndDailyMissionId(userId, missionId)
+    UserDailyMission udm = userDailyMissionProgressService.findUserDailyMission(userId, missionId)
         .orElseThrow(() -> new RuntimeException("Mission not found for user"));
 
     udm.setCurrentProgress(progress);
@@ -54,6 +50,22 @@ public class StudentProgressServiceImpl implements StudentProgressService {
       udm.setCompleted(true);
     }
     return userDailyMissionRepository.save(udm);
+  }
+
+  @Override
+  public UserDailyMission claimReward(UUID userId, Long missionId) {
+    UserDailyMission udm = userDailyMissionProgressService.findUserDailyMission(userId, missionId)
+        .orElseThrow(() -> new RuntimeException("Mission not found for user"));
+
+    if (!udm.isCompleted()) {
+      throw new IllegalStateException("Mission must be completed before claiming reward");
+    }
+
+    if (!udm.isRewardClaimed()) {
+      udm.setRewardClaimed(true);
+      return userDailyMissionRepository.save(udm);
+    }
+    return udm;
   }
 
   @Override

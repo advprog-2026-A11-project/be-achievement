@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.beachievement.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
@@ -28,6 +29,9 @@ class StudentProgressServiceImplTests {
 
   @Mock
   private DailyMissionRepository dailyMissionRepository;
+
+  @Mock
+  private UserDailyMissionProgressService userDailyMissionProgressService;
 
   @InjectMocks
   private StudentProgressServiceImpl studentProgressService;
@@ -58,16 +62,17 @@ class StudentProgressServiceImplTests {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, dailyMission))
+        .thenReturn(userDailyMission);
 
-    when(userDailyMissionRepository.findByUserId(userId))
+    when(userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(eq(userId),
+        any(LocalDate.class)))
         .thenReturn(Arrays.asList(userDailyMission));
 
     List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
 
     assertEquals(1, missions.size());
-    verify(userDailyMissionRepository, never()).save(any(UserDailyMission.class));
+    verify(userDailyMissionProgressService).getOrCreateUserDailyMission(userId, dailyMission);
   }
 
   @Test
@@ -75,23 +80,22 @@ class StudentProgressServiceImplTests {
     when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
         .thenReturn(Arrays.asList(dailyMission));
 
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
-        .thenReturn(Optional.empty());
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, dailyMission))
+        .thenReturn(userDailyMission);
 
-    when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
-
-    when(userDailyMissionRepository.findByUserId(userId))
+    when(userDailyMissionRepository.findByUserIdAndDailyMissionActiveDate(eq(userId),
+        any(LocalDate.class)))
         .thenReturn(Arrays.asList(userDailyMission));
 
     List<UserDailyMission> missions = studentProgressService.getStudentMissions(userId);
 
     assertEquals(1, missions.size());
-    verify(userDailyMissionRepository, times(1)).save(any(UserDailyMission.class));
+    verify(userDailyMissionProgressService).getOrCreateUserDailyMission(userId, dailyMission);
   }
 
   @Test
   void testUpdateProgressValidNotCompleted() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
         .thenReturn(Optional.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
 
@@ -104,7 +108,7 @@ class StudentProgressServiceImplTests {
 
   @Test
   void testUpdateProgressValidCompleted() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 1L))
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
         .thenReturn(Optional.of(userDailyMission));
     when(userDailyMissionRepository.save(any(UserDailyMission.class))).thenReturn(userDailyMission);
 
@@ -117,7 +121,7 @@ class StudentProgressServiceImplTests {
 
   @Test
   void testUpdateProgressNotFound() {
-    when(userDailyMissionRepository.findByUserIdAndDailyMissionId(userId, 99L))
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 99L))
         .thenReturn(Optional.empty());
 
     assertThrows(RuntimeException.class, () -> {
@@ -135,5 +139,54 @@ class StudentProgressServiceImplTests {
 
     assertEquals(150, totalRewardPoints);
     verify(userDailyMissionRepository).calculateTotalRewardPoints(userId);
+  }
+
+  @Test
+  void testClaimRewardMarksCompletedMissionAsClaimed() {
+    userDailyMission.setCompleted(true);
+    userDailyMission.setRewardClaimed(false);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+    when(userDailyMissionRepository.save(userDailyMission)).thenReturn(userDailyMission);
+
+    UserDailyMission result = studentProgressService.claimReward(userId, 1L);
+
+    assertTrue(result.isRewardClaimed());
+    verify(userDailyMissionRepository).save(userDailyMission);
+  }
+
+  @Test
+  void testClaimRewardIsIdempotentWhenAlreadyClaimed() {
+    userDailyMission.setCompleted(true);
+    userDailyMission.setRewardClaimed(true);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+
+    UserDailyMission result = studentProgressService.claimReward(userId, 1L);
+
+    assertTrue(result.isRewardClaimed());
+    verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testClaimRewardFailsWhenMissionNotCompleted() {
+    userDailyMission.setCompleted(false);
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 1L))
+        .thenReturn(Optional.of(userDailyMission));
+
+    assertThrows(IllegalStateException.class,
+        () -> studentProgressService.claimReward(userId, 1L));
+
+    verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testClaimRewardFailsWhenMissionNotFound() {
+    when(userDailyMissionProgressService.findUserDailyMission(userId, 99L))
+        .thenReturn(Optional.empty());
+
+    assertThrows(RuntimeException.class, () -> studentProgressService.claimReward(userId, 99L));
+
+    verify(userDailyMissionRepository, never()).save(any());
   }
 }

@@ -16,4 +16,6 @@ public class AchievementRequest {
   @NotNull(message = "Milestone is required")
   @Min(value = 1, message = "Milestone must be at least 1")
   private Integer milestone;
+
+  private String milestoneType;
 }

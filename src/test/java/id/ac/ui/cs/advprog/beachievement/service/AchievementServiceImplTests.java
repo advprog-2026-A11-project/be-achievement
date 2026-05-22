@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import id.ac.ui.cs.advprog.beachievement.model.Achievement;
 import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserAchievementRepository;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class AchievementServiceImplTests {
   @Mock
   private AchievementRepository achievementRepository;
+  @Mock
+  private UserAchievementRepository userAchievementRepository;
   @InjectMocks
   private AchievementServiceImpl achievementService;
   private Achievement achievement;
@@ -54,6 +57,7 @@ class AchievementServiceImplTests {
   @Test
   void testDeleteAchievement() {
     achievementService.delete(1L);
+    verify(userAchievementRepository, times(1)).deleteByAchievementId(1L);
     verify(achievementRepository, times(1)).deleteById(1L);
   }
 
