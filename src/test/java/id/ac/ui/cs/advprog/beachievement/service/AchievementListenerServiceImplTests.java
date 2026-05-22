@@ -3,16 +3,24 @@ package id.ac.ui.cs.advprog.beachievement.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import id.ac.ui.cs.advprog.beachievement.model.Achievement;
+import id.ac.ui.cs.advprog.beachievement.model.ClanPromotedEvent;
 import id.ac.ui.cs.advprog.beachievement.model.DailyMission;
 import id.ac.ui.cs.advprog.beachievement.model.QuizCompletedEvent;
+import id.ac.ui.cs.advprog.beachievement.model.UserAchievement;
 import id.ac.ui.cs.advprog.beachievement.model.UserDailyMission;
 import id.ac.ui.cs.advprog.beachievement.model.UserQuizCount;
+import id.ac.ui.cs.advprog.beachievement.repository.AchievementRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.DailyMissionRepository;
+import id.ac.ui.cs.advprog.beachievement.repository.UserAchievementRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.UserDailyMissionRepository;
 import id.ac.ui.cs.advprog.beachievement.repository.UserQuizCountRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +48,12 @@ class AchievementListenerServiceImplTests {
 
   @Mock
   private UserDailyMissionProgressService userDailyMissionProgressService;
+
+  @Mock
+  private AchievementRepository achievementRepository;
+
+  @Mock
+  private UserAchievementRepository userAchievementRepository;
 
   @InjectMocks
   private AchievementListenerServiceImpl achievementListenerService;
@@ -184,6 +198,111 @@ class AchievementListenerServiceImplTests {
   }
 
   @Test
+  void testProcessQuizCompletedIncrementsReadNewsMissionForNewsCategory() {
+    event.setCategory("News & Media");
+    mission.setMissionType("READ_NEWS");
+
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(1, existing.getCurrentProgress());
+    verify(userDailyMissionRepository).save(existing);
+  }
+
+  @Test
+  void testProcessQuizCompletedSkipsReadNewsMissionForDifferentCategory() {
+    event.setCategory("Science");
+    mission.setMissionType("READ_NEWS");
+
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(0, existing.getCurrentProgress());
+    verify(userDailyMissionRepository, never()).save(existing);
+  }
+
+  @Test
+  void testProcessQuizCompletedIncrementsReadFictionMissionForSastraCategory() {
+    event.setCategory("Sastra/Fiksi");
+    mission.setMissionType("READ_FICTION");
+
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(1, existing.getCurrentProgress());
+    verify(userDailyMissionRepository).save(existing);
+  }
+
+  @Test
+  void testProcessQuizCompletedIncrementsAccuracyMissionWhenAccuracyIsRatioOne() {
+    event.setAccuracy(1.0);
+    mission.setMissionType("QUIZ_ACCURACY");
+
+    UserDailyMission existing = new UserDailyMission();
+    existing.setUserId(userId);
+    existing.setDailyMission(mission);
+    existing.setCurrentProgress(0);
+    existing.setCompleted(false);
+
+    when(dailyMissionRepository.findByActiveDate(any(LocalDate.class)))
+        .thenReturn(Arrays.asList(mission));
+    when(userDailyMissionProgressService.getOrCreateUserDailyMission(userId, mission))
+        .thenReturn(existing);
+    when(userQuizCountRepository.findByUserId(any(UUID.class)))
+        .thenReturn(Optional.empty());
+    when(userQuizCountRepository.save(any(UserQuizCount.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    achievementListenerService.processQuizCompleted(event);
+
+    assertEquals(1, existing.getCurrentProgress());
+    verify(userAchievementService).checkAndUnlockAchievementsByType(userId, "QUIZ_ACCURACY");
+    verify(userDailyMissionRepository).save(existing);
+  }
+
+  @Test
   void testProcessQuizCompletedSetsCompleted() {
     UserDailyMission existing = new UserDailyMission();
     existing.setUserId(userId);
@@ -247,5 +366,83 @@ class AchievementListenerServiceImplTests {
     verify(userAchievementService, never()).checkAndUnlockAchievements(any(UUID.class), anyInt());
     verify(dailyMissionRepository, never()).findByActiveDate(any(LocalDate.class));
     verify(userDailyMissionRepository, never()).save(any());
+  }
+
+  @Test
+  void testProcessClanPromotedUnlocksNewAchievement() {
+    Achievement diamond = new Achievement();
+    diamond.setId(10L);
+    diamond.setTitle("Diamond");
+    diamond.setMilestoneType("CLAN_DIAMOND");
+
+    when(achievementRepository.findAll()).thenReturn(List.of(diamond));
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 10L))
+        .thenReturn(false);
+
+    ClanPromotedEvent clanEvent = new ClanPromotedEvent();
+    clanEvent.setClanId("clan-1");
+    clanEvent.setClanName("Alpha Clan");
+    clanEvent.setUserIds(List.of(userId));
+
+    achievementListenerService.processClanPromoted(clanEvent);
+
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testProcessClanPromotedCreatesDiamondAchievementIfMissing() {
+    Achievement createdDiamond = new Achievement();
+    createdDiamond.setId(99L);
+    createdDiamond.setTitle("Diamond");
+    createdDiamond.setMilestoneType("CLAN_DIAMOND");
+
+    when(achievementRepository.findAll()).thenReturn(new ArrayList<>());
+    when(achievementRepository.save(any(Achievement.class))).thenReturn(createdDiamond);
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 99L))
+        .thenReturn(false);
+
+    ClanPromotedEvent clanEvent = new ClanPromotedEvent();
+    clanEvent.setClanId("clan-1");
+    clanEvent.setClanName("Alpha Clan");
+    clanEvent.setUserIds(List.of(userId));
+
+    achievementListenerService.processClanPromoted(clanEvent);
+
+    verify(achievementRepository).save(any(Achievement.class));
+    verify(userAchievementRepository).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testProcessClanPromotedSkipsIfAlreadyUnlocked() {
+    Achievement diamond = new Achievement();
+    diamond.setId(10L);
+    diamond.setTitle("Diamond");
+    diamond.setMilestoneType("CLAN_DIAMOND");
+
+    when(achievementRepository.findAll()).thenReturn(List.of(diamond));
+    when(userAchievementRepository.existsByUserIdAndAchievementId(userId, 10L))
+        .thenReturn(true);
+
+    ClanPromotedEvent clanEvent = new ClanPromotedEvent();
+    clanEvent.setClanId("clan-1");
+    clanEvent.setClanName("Alpha Clan");
+    clanEvent.setUserIds(List.of(userId));
+
+    achievementListenerService.processClanPromoted(clanEvent);
+
+    verify(userAchievementRepository, never()).save(any(UserAchievement.class));
+  }
+
+  @Test
+  void testProcessClanPromotedSkipsNullUserIds() {
+    ClanPromotedEvent clanEvent = new ClanPromotedEvent();
+    clanEvent.setClanId("clan-1");
+    clanEvent.setClanName("Alpha Clan");
+    clanEvent.setUserIds(Arrays.asList((UUID) null));
+
+    achievementListenerService.processClanPromoted(clanEvent);
+
+    verifyNoInteractions(achievementRepository);
+    verifyNoInteractions(userAchievementRepository);
   }
 }

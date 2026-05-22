@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.beachievement.controller;
 
 import id.ac.ui.cs.advprog.beachievement.dto.ApiResponse;
+import id.ac.ui.cs.advprog.beachievement.model.ClanPromotedEvent;
 import id.ac.ui.cs.advprog.beachievement.model.QuizCompletedEvent;
 import id.ac.ui.cs.advprog.beachievement.service.AchievementListenerService;
 import java.util.UUID;
@@ -45,6 +46,42 @@ public class EventController {
     } catch (Exception e) {
       log.error("Failed to process quiz completed event", e);
       String errMsg = "Failed to process quiz completed event: " + e.getMessage();
+      return ResponseEntity.internalServerError()
+          .body(ApiResponse.error(errMsg));
+    }
+  }
+
+  @PostMapping("/clan-promoted")
+  public ResponseEntity<ApiResponse<String>> handleClanPromotedEvent(
+      @RequestBody ClanPromotedEvent event) {
+    log.info("Received clan promoted event via REST: {}", event);
+
+    if (event.getTier() != null && !"Diamond".equalsIgnoreCase(event.getTier())) {
+      return ResponseEntity.ok(
+          ApiResponse.success("Clan promotion event ignored because tier is not Diamond",
+              "IGNORED"));
+    }
+
+    if (event.getEventId() == null || event.getEventId().isBlank()) {
+      event.setEventId(UUID.randomUUID().toString());
+    }
+
+    if (event.getUserIds() == null || event.getUserIds().isEmpty()) {
+      log.warn("Clan promoted event for clan {} has no user IDs; acknowledging without unlock",
+          event.getClanId());
+      return ResponseEntity.ok(
+          ApiResponse.success("Clan promoted event acknowledged without member unlocks",
+              "NO_USERS"));
+    }
+
+    try {
+      achievementListenerService.processClanPromoted(event);
+      log.info("Successfully processed clan promoted event for clan: {}", event.getClanId());
+      return ResponseEntity.ok(
+          ApiResponse.success("Clan promoted event processed successfully", "SUCCESS"));
+    } catch (Exception e) {
+      log.error("Failed to process clan promoted event", e);
+      String errMsg = "Failed to process clan promoted event: " + e.getMessage();
       return ResponseEntity.internalServerError()
           .body(ApiResponse.error(errMsg));
     }

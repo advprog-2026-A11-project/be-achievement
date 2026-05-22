@@ -9,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.beachievement.model.ClanPromotedEvent;
 import id.ac.ui.cs.advprog.beachievement.model.QuizCompletedEvent;
 import id.ac.ui.cs.advprog.beachievement.service.AchievementListenerService;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -96,11 +98,110 @@ class EventControllerTest {
             .value("Failed to process quiz completed event: listener failed"));
   }
 
+  @Test
+  void handleClanPromotedEventReturnsSuccess() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+    event.setEventId("event-clan-1");
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data").value("SUCCESS"));
+
+    verify(achievementListenerService).processClanPromoted(any(ClanPromotedEvent.class));
+  }
+
+  @Test
+  void handleClanPromotedEventGeneratesEventIdWhenMissing() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true));
+
+    ArgumentCaptor<ClanPromotedEvent> captor = ArgumentCaptor.forClass(ClanPromotedEvent.class);
+    verify(achievementListenerService).processClanPromoted(captor.capture());
+    UUID.fromString(captor.getValue().getEventId());
+  }
+
+  @Test
+  void handleClanPromotedEventAcknowledgesWhenUserIdsIsNull() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+    event.setUserIds(null);
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data").value("NO_USERS"));
+
+    verifyNoInteractions(achievementListenerService);
+  }
+
+  @Test
+  void handleClanPromotedEventAcknowledgesWhenUserIdsIsEmpty() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+    event.setUserIds(List.of());
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data").value("NO_USERS"));
+
+    verifyNoInteractions(achievementListenerService);
+  }
+
+  @Test
+  void handleClanPromotedEventIgnoresNonDiamondTier() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+    event.setTier("Platinum");
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.success").value(true))
+        .andExpect(jsonPath("$.data").value("IGNORED"));
+
+    verifyNoInteractions(achievementListenerService);
+  }
+
+  @Test
+  void handleClanPromotedEventReturnsInternalServerErrorWhenServiceThrows() throws Exception {
+    ClanPromotedEvent event = validClanEvent();
+    doThrow(new RuntimeException("listener failed"))
+        .when(achievementListenerService).processClanPromoted(any(ClanPromotedEvent.class));
+
+    mockMvc.perform(post("/api/events/clan-promoted")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(event)))
+        .andExpect(status().isInternalServerError())
+        .andExpect(jsonPath("$.success").value(false))
+        .andExpect(jsonPath("$.message")
+            .value("Failed to process clan promoted event: listener failed"));
+  }
+
   private QuizCompletedEvent validEvent() {
     QuizCompletedEvent event = new QuizCompletedEvent();
     event.setUserId(UUID.randomUUID());
     event.setScore(100);
     event.setAccuracy(95.0);
+    return event;
+  }
+
+  private ClanPromotedEvent validClanEvent() {
+    ClanPromotedEvent event = new ClanPromotedEvent();
+    event.setClanId("clan-1");
+    event.setClanName("Alpha Clan");
+    event.setTier("Diamond");
+    event.setUserIds(List.of(UUID.randomUUID()));
     return event;
   }
 }
