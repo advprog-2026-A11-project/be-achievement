@@ -58,6 +58,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
+    runtimeOnly("io.micrometer:micrometer-registry-otlp")
 }
 
 tasks.withType<Test> {

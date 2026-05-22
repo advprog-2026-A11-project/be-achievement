@@ -20,6 +20,9 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
 
   boolean existsByUserIdAndAchievementId(UUID userId, Long achievementId);
 
+  @Query("SELECT ua.achievement.id FROM UserAchievement ua WHERE ua.userId = :userId")
+  List<Long> findAchievementIdsByUserId(@Param("userId") UUID userId);
+
   @Modifying
   @Query("DELETE FROM UserAchievement ua WHERE ua.achievement.id = :achievementId")
   void deleteByAchievementId(@Param("achievementId") Long achievementId);
