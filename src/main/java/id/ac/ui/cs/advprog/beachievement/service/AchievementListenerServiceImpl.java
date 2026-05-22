@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.beachievement.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -100,7 +102,7 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
   @Transactional
   public void processClanPromoted(ClanPromotedEvent event) {
     List<UUID> userIds = event.getUserIds();
-    if (userIds == null || userIds.stream().noneMatch(id -> id != null)) {
+    if (userIds == null || userIds.stream().noneMatch(Objects::nonNull)) {
       return;
     }
 
@@ -181,9 +183,26 @@ public class AchievementListenerServiceImpl implements AchievementListenerServic
   }
 
   private String normalizeRuleText(String value) {
-    return value.trim()
-        .toUpperCase()
-        .replaceAll("[^A-Z0-9]+", "_")
-        .replaceAll("^_+|_+$", "");
+    String upperValue = value.trim().toUpperCase(Locale.ROOT);
+    StringBuilder normalized = new StringBuilder();
+    boolean lastWasSeparator = true;
+
+    for (int i = 0; i < upperValue.length(); i++) {
+      char current = upperValue.charAt(i);
+      if (Character.isLetterOrDigit(current)) {
+        normalized.append(current);
+        lastWasSeparator = false;
+      } else if (!lastWasSeparator) {
+        normalized.append('_');
+        lastWasSeparator = true;
+      }
+    }
+
+    int length = normalized.length();
+    if (length > 0 && normalized.charAt(length - 1) == '_') {
+      normalized.deleteCharAt(length - 1);
+    }
+
+    return normalized.toString();
   }
 }
